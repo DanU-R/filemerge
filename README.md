@@ -21,6 +21,7 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 - Gabung banyak PDF + gambar (JPG/JPEG/PNG) jadi satu PDF.
 - Urutkan dengan **drag-and-drop** atau tombol naik/turun (aksesibilitas).
 - **Pengaturan halaman:** ukuran (A4 / Letter / sesuai gambar), orientasi, margin.
+- **Alat PDF:** putar/hapus halaman per halaman, **pecah (split)** berdasarkan rentang, **kompres**.
 - Orientasi EXIF diterapkan ke piksel; JPEG CMYK dikonversi ke RGB.
 - Validasi berbasis konten (magic bytes), bukan ekstensi.
 - PDF rusak/terenkripsi/kosong ditandai tanpa membuat aplikasi crash.

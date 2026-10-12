@@ -15,6 +15,7 @@ import {
 import { ReorderableList } from '@/components/ReorderableList'
 import PageSettingsPanel from '@/components/PageSettingsPanel'
 import PresetPanel, { type PresetRow } from '@/components/PresetPanel'
+import PdfToolsPanel from '@/components/PdfToolsPanel'
 import { fetchWithRetry } from '@/lib/resilientFetch'
 import type { MergeSource, QueueItem } from '@/lib/types'
 
@@ -424,6 +425,8 @@ export default function MergeTool({
       )}
 
       <PageSettingsPanel value={pageSettings} onChange={setPageSettings} />
+
+      <PdfToolsPanel />
 
       <div className="controls">
         <label className="field">
