@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { PDFDocument } from '@cantoo/pdf-lib'
-import { applyPageEdits, inspectPdf, parseRanges, splitPdf } from '../../src/lib/pageTools'
+import { applyPageEdits, inspectPdf, parseRanges, resolvePageOrder, splitPdf } from '../../src/lib/pageTools'
 
 async function makePdf(sizes: [number, number][]): Promise<Uint8Array> {
   const d = await PDFDocument.create()
@@ -33,6 +33,76 @@ describe('inspectPdf', () => {
     expect(pages[0].rotation).toBe(90)
     expect(pages[0].width).toBe(400)
     expect(pages[0].height).toBe(200)
+  })
+})
+
+describe('resolvePageOrder', () => {
+  it('urutan asal bila tidak ada order', () => {
+    expect(resolvePageOrder([{}, {}, {}])).toEqual([0, 1, 2])
+  })
+
+  it('mengikuti order bila diberikan', () => {
+    expect(resolvePageOrder([{ order: 2 }, { order: 0 }, { order: 1 }])).toEqual([1, 2, 0])
+  })
+
+  it('order sebagian diisi -> sisanya tetap di posisi asal', () => {
+    expect(resolvePageOrder([{ order: 1 }, {}, { order: 0 }])).toEqual([2, 0, 1])
+  })
+})
+
+describe('applyPageEdits — susun ulang', () => {
+  it('membalik urutan 2 halaman', async () => {
+    // Halaman berukuran berbeda supaya urutannya bisa diperiksa.
+    const d = await PDFDocument.create()
+    d.addPage([100, 100])
+    d.addPage([900, 900])
+    const bytes = await d.save()
+
+    const out = await applyPageEdits(bytes, [{ order: 1 }, { order: 0 }])
+    const s = Buffer.from(out).toString('latin1')
+    const boxes = [...s.matchAll(/\/MediaBox\s*\[[^\]]*?([\d.]+)\s+([\d.]+)\s*\]/g)].map((m) =>
+      Math.round(Number(m[1])),
+    )
+    // Halaman 900 sekarang lebih dulu.
+    expect(boxes[0]).toBe(900)
+    expect(boxes[1]).toBe(100)
+  })
+
+  it('urutan + rotasi + hapus digabung', async () => {
+    const d = await PDFDocument.create()
+    d.addPage([100, 100])
+    d.addPage([200, 200])
+    d.addPage([300, 300])
+    const bytes = await d.save()
+
+    // hapus halaman 2 (tengah), lalu tukar sisa: 300 dulu, 100 kemudian
+    const out = await applyPageEdits(bytes, [
+      { order: 1 },
+      { deleted: true },
+      { order: 0, rotate: 90 },
+    ])
+    const s = Buffer.from(out).toString('latin1')
+    expect([...s.matchAll(/\/Type\s*\/Page[^s]/g)].length).toBe(2)
+    const boxes = [...s.matchAll(/\/MediaBox\s*\[[^\]]*?([\d.]+)\s+([\d.]+)\s*\]/g)].map((m) =>
+      Math.round(Number(m[1])),
+    )
+    expect(boxes[0]).toBe(300)
+    expect(boxes[1]).toBe(100)
+    expect(s).toMatch(/\/Rotate\s+90/)
+  })
+
+  it('mengabaikan halaman yang dihapus walau ada order', async () => {
+    const bytes = await makePdf([
+      [200, 200],
+      [200, 200],
+      [200, 200],
+    ])
+    const out = await applyPageEdits(bytes, [
+      { order: 0, deleted: true },
+      { order: 1 },
+      { order: 2 },
+    ])
+    expect(mediaBoxCount(out)).toBe(2)
   })
 })
 

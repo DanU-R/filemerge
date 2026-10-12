@@ -11,11 +11,16 @@ pernah dikirim ke server.
 
 ## Yang dikerjakan
 
-### 1. Editor halaman (rotasi & hapus)
+### 1. Editor halaman (susun ulang, rotasi, hapus)
 - `src/lib/pageTools.ts`: `inspectPdf` (info tiap halaman + ukuran efektif setelah rotasi),
-  `applyPageEdits`.
+  `applyPageEdits`, `resolvePageOrder`.
+- **Susun ulang urutan:** drag-and-drop antar kartu thumbnail (dnd-kit) atau tombol ←/→
+  sebagai alternatif aksesibilitas. Posisi ditampilkan (`#1`, `#2`, …). Urutan dikirim ke
+  `applyPageEdits` lewat medan `order` sehingga hasil PDF benar-benar tersusun ulang —
+  bukan sekadar tampilan.
 - Rotasi 90°/180° per halaman, digabung dengan rotasi asli file (mis. asal 90° + 180° = 270°).
 - Hapus halaman per halaman dengan opsi kembalikan (undo) sebelum diterapkan.
+- Ketiga operasi dapat digabung dalam satu penerapan (susun ulang + rotasi + hapus).
 - **Pratinjau visual:** setiap halaman dirender sebagai thumbnail asli (pdf.js) dan rotasi
   terlihat langsung di pratinjau — bukan sekadar angka derajat. Rotasi ditampilkan lewat
   CSS transform dengan kotak yang bertukar (A4 tegak → melintang), cerminan akurat hasil akhir.

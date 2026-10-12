@@ -1,11 +1,16 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element --
+   Thumbnail berasal dari blob hasil render pdf.js (object URL), tidak melewati
+   jaringan sehingga next/image tidak memberi manfaat dan malah menambah biaya. */
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { applyEditsBytes, compressPdfBytes, inspectPdfBytes, splitPdfBytes } from '@/lib/pageToolsClient'
 import { parseRanges, type PageEdit, type PageInfo } from '@/lib/pageTools'
 import { detectKind } from '@/lib/validate'
 import { sanitizeOutputName, sanitizeFileName } from '@/lib/sanitize'
 import { renderThumbnails, revokeThumbnails, type Thumbnail } from '@/lib/pdfThumbnails'
+import { ReorderableThumbs } from '@/components/ReorderableThumbs'
 
 const ACCEPT = '.pdf,application/pdf'
 
@@ -70,6 +75,8 @@ export default function PdfToolsPanel() {
   const [notice, setNotice] = useState<string | null>(null)
   const [thumbs, setThumbs] = useState<Thumbnail[] | null>(null)
   const [thumbStatus, setThumbStatus] = useState<'idle' | 'rendering' | 'ready' | 'failed'>('idle')
+  /** Urutan halaman secara visual (id = `p<indeksAsal>`). */
+  const [order, setOrder] = useState<string[]>([])
 
   // Object URL thumbnail harus di-revoke agar tidak bocor memori.
   const thumbsRef = useRef<Thumbnail[] | null>(null)
@@ -83,37 +90,41 @@ export default function PdfToolsPanel() {
     [],
   )
 
-  const loadBytes = useCallback(async (name: string, bytes: Uint8Array) => {
-    setBusy(true)
-    setError(null)
-    setNotice(null)
-    try {
-      const pages = await inspectPdfBytes(bytes)
-      setLoaded({ name, bytes, pages })
-      setEdits({})
-      setRanges(`1-${Math.max(1, pages.length)}`)
-
-      // Preview visual (tidak wajib): kegagalan render tidak boleh menggagalkan
-      // fungsi inti. Bila pdf.js gagal dimuat, editor tetap berguna tanpa gambar.
-      setThumbs(null)
-      setThumbStatus('rendering')
+  const loadBytes = useCallback(
+    async (name: string, bytes: Uint8Array, opts: { keepNotice?: boolean } = {}) => {
+      setBusy(true)
+      setError(null)
+      if (!opts.keepNotice) setNotice(null)
       try {
-        const rendered = await renderThumbnails(bytes, { maxWidth: 200, yieldMs: 0 })
-        setThumbs(rendered)
-        setThumbStatus('ready')
-      } catch {
+        const pages = await inspectPdfBytes(bytes)
+        setLoaded({ name, bytes, pages })
+        setEdits({})
+        setOrder(pages.map((p) => `p${p.index}`))
+        setRanges(`1-${Math.max(1, pages.length)}`)
+
+        // Preview visual (tidak wajib): kegagalan render tidak boleh menggagalkan
+        // fungsi inti. Bila pdf.js gagal dimuat, editor tetap berguna tanpa gambar.
         setThumbs(null)
-        setThumbStatus('failed')
+        setThumbStatus('rendering')
+        try {
+          const rendered = await renderThumbnails(bytes, { maxWidth: 200, yieldMs: 0 })
+          setThumbs(rendered)
+          setThumbStatus('ready')
+        } catch {
+          setThumbs(null)
+          setThumbStatus('failed')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Gagal membaca PDF.')
+        setLoaded(null)
+        setThumbs(null)
+        setThumbStatus('idle')
+      } finally {
+        setBusy(false)
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal membaca PDF.')
-      setLoaded(null)
-      setThumbs(null)
-      setThumbStatus('idle')
-    } finally {
-      setBusy(false)
-    }
-  }, [])
+    },
+    [],
+  )
 
   const onPick = useCallback(
     async (file: File | null) => {
@@ -151,6 +162,22 @@ export default function PdfToolsPanel() {
     })
   }
 
+  /** Pindahkan posisi halaman (drag-and-drop). */
+  const reorder = (from: number, to: number) => {
+    setOrder((prev) => {
+      if (from === to || from < 0 || to < 0 || from >= prev.length || to >= prev.length) return prev
+      const next = [...prev]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return next
+    })
+  }
+
+  /** Alternatif aksesibilitas: naik/turun satu posisi. */
+  const move = (pos: number, dir: -1 | 1) => reorder(pos, pos + dir)
+
+  const isReordered = order.some((id, i) => id !== `p${i}`)
+
   const keptCount = loaded
     ? loaded.pages.filter((p) => !edits[p.index]?.deleted).length
     : 0
@@ -165,12 +192,20 @@ export default function PdfToolsPanel() {
     setError(null)
     setNotice(null)
     try {
-      const list: PageEdit[] = loaded.pages.map((p) => edits[p.index] ?? {})
+      const list: PageEdit[] = loaded.pages.map((p) => ({ ...(edits[p.index] ?? {}) }))
+      // Kirim urutan hasil: posisi visual -> indeks halaman asal.
+      order.forEach((id, pos) => {
+        const idx = Number(id.slice(1))
+        list[idx] = { ...list[idx], order: pos }
+      })
       const out = await applyEditsBytes(loaded.bytes, list)
       downloadBytes(out, sanitizeOutputName(baseName(loaded.name)))
-      setNotice(`Halaman disimpan: ${keptCount} dari ${loaded.pages.length}.`)
-      // Muat ulang dari hasil agar indeks halaman konsisten.
-      await loadBytes(loaded.name, out)
+      // Muat ulang dari hasil agar indeks halaman konsisten, tetapi pertahankan
+      // pesan sukses (sebelumnya pesan ini terhapus oleh reload).
+      await loadBytes(loaded.name, out, { keepNotice: true })
+      setNotice(
+        `Halaman disimpan: ${keptCount} dari ${loaded.pages.length}${isReordered ? ', urutan diubah' : ''}.`,
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal menerapkan perubahan halaman.')
     } finally {
@@ -271,17 +306,24 @@ export default function PdfToolsPanel() {
             </p>
           )}
 
-          <ul className="thumbgrid" data-testid="pdftools-pages">
-            {loaded.pages.map((p) => {
+          <ReorderableThumbs
+            orderIds={order}
+            onReorder={reorder}
+            className="thumbgrid"
+            renderItem={(id, pos, handle) => {
+              const p = loaded.pages[Number(id.slice(1))]
+              if (!p) return null
               const e = edits[p.index] ?? {}
               const t = thumbs?.[p.index]
               const angle = ((p.rotation + (e.rotate ?? 0)) % 360 + 360) % 360
               return (
-                <li
-                  key={p.index}
-                  className={`thumb${e.deleted ? ' thumb--deleted' : ''}`}
-                  data-testid="pdftools-page"
-                >
+                <>
+                  <div className="thumb__top">
+                    {handle}
+                    <span className="thumb__pos" data-testid="page-pos">
+                      #{pos + 1}
+                    </span>
+                  </div>
                   <div className="thumb__frame" data-testid="thumb-frame">
                     {t ? (
                       <img
@@ -316,6 +358,26 @@ export default function PdfToolsPanel() {
                         <button
                           className="icon"
                           type="button"
+                          aria-label={`Geser halaman ${p.index + 1} ke kiri`}
+                          onClick={() => move(pos, -1)}
+                          disabled={pos === 0}
+                          data-testid="page-up"
+                        >
+                          ←
+                        </button>
+                        <button
+                          className="icon"
+                          type="button"
+                          aria-label={`Geser halaman ${p.index + 1} ke kanan`}
+                          onClick={() => move(pos, 1)}
+                          disabled={pos === order.length - 1}
+                          data-testid="page-down"
+                        >
+                          →
+                        </button>
+                        <button
+                          className="icon"
+                          type="button"
                           aria-label={`Putar halaman ${p.index + 1} 90 derajat`}
                           onClick={() => rotate90(p.index)}
                           data-testid="page-rotate-90"
@@ -343,10 +405,10 @@ export default function PdfToolsPanel() {
                       {e.deleted ? '↺' : '×'}
                     </button>
                   </div>
-                </li>
+                </>
               )
-            })}
-          </ul>
+            }}
+          />
 
           <div className="preset">
             <button

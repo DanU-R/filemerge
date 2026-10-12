@@ -194,6 +194,93 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
     await expect(page.locator('[data-testid="pdftools-page"]').first()).toContainText('90°')
   })
 
+  test('susun ulang: tombol kiri/kanan mengubah urutan halaman pada hasil', async ({ page }) => {
+    await page.goto(BASE + '/merge')
+    // Dua halaman dengan lebar berbeda supaya urutan hasil bisa diperiksa.
+    await pick(page, await pdfSized([
+      [100, 300],
+      [900, 300],
+    ]), 'dua.pdf')
+    await expect(page.locator('[data-testid="pdftools-page"]')).toHaveCount(2)
+    await expect(page.locator('[data-testid="page-pos"]').first()).toHaveText('#1')
+
+    // Geser halaman pertama ke kanan -> halaman 900 jadi posisi #1.
+    await page.locator('[data-testid="page-down"]').first().click()
+    await expect(page.locator('[data-testid="page-pos"]').first()).toHaveText('#1')
+    const firstLabel = await page.locator('[data-testid="pdftools-page"]').first().textContent()
+    expect(firstLabel).toContain('Hal 2')
+
+    const dl = page.waitForEvent('download', { timeout: 40000 })
+    await page.click('[data-testid="pdftools-apply"]')
+    const d = await dl
+    const stream = await d.createReadStream()
+    const chunks: Buffer[] = []
+    for await (const c of stream) chunks.push(Buffer.from(c))
+    const s = Buffer.concat(chunks).toString('latin1')
+    const widths = [...s.matchAll(/\/MediaBox\s*\[[^\]]*?([\d.]+)\s+([\d.]+)\s*\]/g)].map((m) =>
+      Math.round(Number(m[1])),
+    )
+    expect(widths[0]).toBe(900) // halaman lebar sekarang lebih dulu
+    expect(widths[1]).toBe(100)
+    await expect(page.locator('[data-testid="pdftools-notice"]')).toContainText('urutan diubah')
+  })
+
+  test('susun ulang: drag handle tersedia & bisa mengubah urutan', async ({ page }) => {
+    await page.goto(BASE + '/merge')
+    await pick(page, await pdfSized([
+      [100, 300],
+      [900, 300],
+    ]), 'dua.pdf')
+    await expect(page.locator('[data-testid="page-drag-handle"]')).toHaveCount(2)
+
+    // Drag halaman pertama ke posisi halaman kedua.
+    const h = page.locator('[data-testid="page-drag-handle"]').first()
+    const target = page.locator('[data-testid="pdftools-page"]').nth(1)
+    // Pastikan kartu benar-benar terlihat di viewport sebelum menghitung koordinat,
+    // kalau tidak boundingBox bisa bernilai negatif dan drag tidak terjadi.
+    await target.scrollIntoViewIfNeeded()
+    await page.evaluate(() => window.scrollBy(0, -80))
+    const hb = (await h.boundingBox())!
+    const tb = (await target.boundingBox())!
+    expect(hb.y).toBeGreaterThanOrEqual(0)
+    await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2, { steps: 15 })
+    await page.mouse.move(tb.x + tb.width / 2 + 10, tb.y + tb.height / 2 + 6, { steps: 5 })
+    await page.mouse.up()
+
+    // Urutan berubah: halaman 2 kini di posisi pertama.
+    await expect(page.locator('[data-testid="pdftools-page"]').first()).toContainText('Hal 2', {
+      timeout: 10000,
+    })
+  })
+
+  test('susun ulang + rotasi + hapus sekaligus tetap benar', async ({ page }) => {
+    await page.goto(BASE + '/merge')
+    await pick(page, await pdfSized([
+      [100, 300],
+      [200, 300],
+      [900, 300],
+    ]), 'tiga.pdf')
+
+    // Hapus halaman 2 (tengah)
+    await page.locator('[data-testid="page-delete"]').nth(1).click()
+    // Geser halaman pertama ke kanan -> 200(terhapus dilewati?) cukup pastikan tidak crash
+    await page.locator('[data-testid="page-down"]').first().click()
+    // Putar halaman pertama yang tersisa
+    await page.locator('[data-testid="page-rotate-90"]').first().click()
+
+    const dl = page.waitForEvent('download', { timeout: 40000 })
+    await page.click('[data-testid="pdftools-apply"]')
+    const d = await dl
+    const stream = await d.createReadStream()
+    const chunks: Buffer[] = []
+    for await (const c of stream) chunks.push(Buffer.from(c))
+    const s = Buffer.concat(chunks).toString('latin1')
+    expect([...s.matchAll(/\/Type\s*\/Page[^s]/g)].length).toBe(2)
+    expect(s).toMatch(/\/Rotate\s+90/)
+  })
+
   test('pratinjau gagal tetap tidak menghalangi editing (degradasi anggun)', async ({ page }) => {
     // Blokir worker pdf.js -> render gagal, editor harus tetap berfungsi.
     await page.route('**/pdf.worker.min.mjs', (r) => r.abort())

@@ -21,11 +21,23 @@ export interface PageEdit {
   rotate?: number
   /** Bila true, halaman dibuang dari hasil. */
   deleted?: boolean
+  /** Posisi baru halaman (indeks 0-based pada dokumen asal). Bila diisi, urutan mengikuti ini. */
+  order?: number
 }
 
 export interface PdfWithPages {
   doc: PDFDocument
   pages: PageInfo[]
+}
+
+/** Urutan hasil akhir: pakai `order` bila ada, jika tidak urutan asal. */
+export function resolvePageOrder(edits: PageEdit[]): number[] {
+  const hasOrder = edits.some((e) => typeof e?.order === 'number')
+  if (!hasOrder) return edits.map((_, i) => i)
+  return edits
+    .map((e, i) => ({ i, order: e?.order ?? i }))
+    .sort((a, b) => a.order - b.order)
+    .map((x) => x.i)
 }
 
 /**
@@ -63,9 +75,10 @@ export async function inspectPdf(
 }
 
 /**
- * Terapkan rotasi/hapus ke halaman lalu kembalikan bytes PDF baru.
- * Halaman yang ditandai `deleted` dibuang; urutan halaman lain dipertahankan.
- * Bila semua halaman dibuang, hasilnya PDF tanpa halaman (ditolak pemanggil).
+ * Terapkan rotasi/hapus/susun-ulang ke halaman lalu kembalikan bytes PDF baru.
+ * Halaman yang ditandai `deleted` dibuang. Urutan hasil mengikuti `order` bila
+ * diberikan (untuk fitur susun ulang), jika tidak urutan asal dipertahankan.
+ * Melempar bila semua halaman dibuang.
  */
 export async function applyPageEdits(
   bytes: Uint8Array,
@@ -74,25 +87,33 @@ export async function applyPageEdits(
 ): Promise<Uint8Array> {
   const { doc } = await inspectPdf(bytes, decrypt)
   const pages = doc.getPages()
+
+  // 1) Terapkan rotasi dulu (mutasi pada dokumen sumber), lalu tentukan halaman
+  //    yang disimpan menurut urutan yang diminta.
+  const order = resolvePageOrder(edits)
   const keep: number[] = []
 
-  pages.forEach((page, i) => {
-    const edit = edits[i]
-    if (edit?.deleted) return
-    if (edit?.rotate) {
+  order.forEach((i) => {
+    const page = pages[i]
+    if (!page) return
+    if (edits[i]?.deleted) return
+    if (edits[i]?.rotate) {
       const current = page.getRotation().angle
-      page.setRotation(degrees(((current + edit.rotate) % 360 + 360) % 360))
+      page.setRotation(degrees(((current + edits[i].rotate!) % 360 + 360) % 360))
     }
     keep.push(i)
   })
 
   if (keep.length === 0) throw new Error('Tidak ada halaman yang tersisa.')
-  if (keep.length === pages.length && !edits.some((e) => e?.rotate)) {
+
+  const rotated = edits.some((e) => e?.rotate)
+  const reordered = order.some((v, i) => v !== i)
+  if (keep.length === pages.length && !rotated && !reordered) {
     // Tidak ada perubahan berarti — tetap normalisasi via save.
     return doc.save()
   }
 
-  // Buat dokumen baru dengan halaman terpilih (urutan sesuai asal).
+  // 2) Susun dokumen baru mengikuti urutan hasil.
   const out = await PDFDocument.create()
   const copied = await out.copyPages(doc, keep)
   copied.forEach((p) => out.addPage(p))
