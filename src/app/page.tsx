@@ -1,36 +1,43 @@
-import type { CSSProperties } from 'react'
-
-const styles = {
-  main: {
-    fontFamily: 'system-ui, sans-serif',
-    maxWidth: '720px',
-    margin: '48px auto',
-    padding: '0 20px',
-    color: '#111',
-  },
-  code: {
-    background: '#f4f4f4',
-    padding: '2px 4px',
-    borderRadius: '4px',
-  },
-} satisfies Record<string, CSSProperties>
+import Link from 'next/link'
 
 export default function Home() {
   return (
-    <main style={styles.main}>
-      <h1>Next.js on Prisma Compute</h1>
-      <p>This app uses Next.js App Router, Prisma ORM, and PostgreSQL.</p>
-      <p>
-        Query the seeded users at{' '}
-        <a href="/api/users">
-          <code style={styles.code}>/api/users</code>
-        </a>
-        .
-      </p>
-      <p>
-        Connect it with <code style={styles.code}>bun run compute:connect</code>
-        , then push to deploy with Prisma Composer.
-      </p>
+    <main className="page">
+      <header className="hero">
+        <p className="hero__eyebrow">Open source · MIT · Gratis</p>
+        <h1>Gabungkan PDF &amp; gambar jadi satu berkas</h1>
+        <p className="hero__lead">
+          Susun CV, KTP, KK, ijazah, dan sertifikat menjadi satu PDF. Proses penggabungan
+          berjalan <strong>di browser kamu</strong> — isi dokumen tidak dikirim ke server.
+        </p>
+        <div className="hero__actions">
+          <Link className="btn btn--primary" href="/merge">
+            Mulai Merge
+          </Link>
+          <Link className="btn" href="/privacy">
+            Info privasi
+          </Link>
+        </div>
+      </header>
+
+      <section className="features" aria-label="Fitur utama">
+        <article>
+          <h2>Tanpa login</h2>
+          <p>Menggabungkan PDF dan gambar tidak butuh akun. Buka, susun, unduh.</p>
+        </article>
+        <article>
+          <h2>Diproses lokal</h2>
+          <p>Merge berjalan di perangkat kamu memakai Web Worker. Tidak ada upload isi file.</p>
+        </article>
+        <article>
+          <h2>Urutan mudah</h2>
+          <p>Atur urutan halaman dengan tombol naik/turun, lalu unduh dengan nama pilihanmu.</p>
+        </article>
+        <article>
+          <h2>Source terbuka</h2>
+          <p>Kode berlisensi MIT dan dapat dipelajari. Privasi didokumentasikan apa adanya.</p>
+        </article>
+      </section>
     </main>
   )
 }

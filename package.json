@@ -12,12 +12,19 @@
     "db:init": "prisma db init",
     "db:update": "prisma db update",
     "db:seed": "tsx src/prisma/seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "bench:limits": "node tests/bench/limits.bench.mjs",
     "compute:login": "prisma auth login",
     "compute:database:create": "prisma postgres create prisma-compute-nextjs --branch main",
     "compute:connect": "prisma git connect",
     "compute:open": "prisma service open"
   },
   "dependencies": {
+    "@cantoo/pdf-lib": "^2.11.1",
     "@prisma/composer": "0.16.0",
     "@prisma/composer-prisma-cloud": "0.16.0",
     "@prisma/orm-postgres": "8.0.0-rc.8",
@@ -27,13 +34,17 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@prisma/cli-engine": "0.3.0",
     "@types/node": "24.12.4",
     "@types/react": "19.2.16",
     "@types/react-dom": "19.2.3",
     "alchemy": "2.0.0-beta.74",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
     "prisma": "8.0.0-rc.12",
     "tsx": "4.22.4",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^5.0.3"
   }
 }
