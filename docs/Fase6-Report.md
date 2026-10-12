@@ -76,18 +76,24 @@ Semua diverifikasi ulang di produksi setelah perbaikan (bukan hanya unit test).
 | Gate | Hasil |
 |---|---|
 | Typecheck | **exit 0** |
-| Unit (vitest) | **70/70** (10 file) — +17 untuk pageTools & compress |
+| Unit (vitest) | **76/76** (10 file) — pageTools (incl. urutan halaman), compress, dll |
 | Lint | **exit 0** |
 | Build | **exit 0** |
-| E2E Playwright | **96/96** (48 tes × Chromium + Firefox) |
+| E2E Playwright | **102/102** (51 tes × Chromium + Firefox) |
 
-E2E alat PDF (11 tes): daftar halaman, hapus 1 halaman (verifikasi 2 halaman pada hasil),
+E2E alat PDF (14 tes): susun ulang via tombol (urutan PDF diperiksa dari MediaBox), susun ulang via drag, gabungan susun-ulang+rotasi+hapus, daftar halaman, hapus 1 halaman (verifikasi 2 halaman pada hasil),
 tolak bila semua dihapus, rotasi (`/Rotate 90` + halaman utuh), split (tiap bagian dibaca
 dan dihitung halamannya), rentang tidak valid, kompres (nama + halaman + laporan),
 file bukan PDF ditolak, **pratinjau dirender (gambar termuat)**, **rotasi mengubah pratinjau
 secara visual**, **pratinjau gagal tetap bisa mengedit (degradasi anggun)**.
 
-## Verifikasi produksi (deployment `30671e8`)
+## Verifikasi produksi (deployment `cd5b372`)
+
+Susun ulang: awal `Hal 1, Hal 2, Hal 3` (lebar 100, 900, 500) -> geser halaman pertama
+ke kanan sekali -> `Hal 2, Hal 1, Hal 3` dan hasil PDF berlebar **900, 100, 500**
+(urutan benar-benar diterapkan ke dokumen), notice "urutan diubah", **0 error**.
+
+## Verifikasi produksi sebelumnya (deployment `30671e8`)
 
 Worker pdf.js: **HTTP 200** `application/javascript` (same-origin). CSP mengandung
 `worker-src 'self' blob:`. PDF 4→3 halaman uji: **3 thumbnail dirender** (`naturalWidth 200`),
