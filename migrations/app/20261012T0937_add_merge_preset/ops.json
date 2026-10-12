@@ -1,0 +1,122 @@
+[
+  {
+    "id": "table.mergePreset",
+    "label": "Create table \"mergePreset\"",
+    "summary": "Creates table \"mergePreset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "mergePreset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"mergePreset\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"mergePreset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"mergePreset\"",
+        "sql": "CREATE TABLE \"public\".\"mergePreset\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"items\" json NOT NULL,\n  \"name\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"mergePreset\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"mergePreset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.mergePreset.mergePreset_userId_idx_a489d58a",
+    "label": "Create index \"mergePreset_userId_idx_a489d58a\" on \"mergePreset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "mergePreset_userId_idx_a489d58a",
+        "table": "mergePreset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"mergePreset_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"mergePreset_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"mergePreset_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"mergePreset_userId_idx_a489d58a\" ON \"public\".\"mergePreset\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"mergePreset_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"mergePreset_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.mergePreset.mergePreset_userId_fkey",
+    "label": "Add foreign key \"mergePreset_userId_fkey\" on \"mergePreset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "mergePreset_userId_fkey",
+        "table": "mergePreset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"mergePreset_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "mergePreset_userId_fkey",
+          "public",
+          "\"public\".\"mergePreset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"mergePreset_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"mergePreset\"\nADD CONSTRAINT \"mergePreset_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"mergePreset_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "mergePreset_userId_fkey",
+          "public",
+          "\"public\".\"mergePreset\""
+        ]
+      }
+    ]
+  }
+]

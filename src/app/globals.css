@@ -559,3 +559,60 @@ a {
     justify-content: flex-end;
   }
 }
+
+/* ---- Fase 5: drag handle & pengaturan halaman ---- */
+
+.drag-handle {
+  cursor: grab;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  width: 30px;
+  height: 34px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--muted);
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.queue__item--dragging {
+  opacity: 0.6;
+  border-color: var(--primary);
+}
+
+.queue__item {
+  grid-template-columns: 30px 28px 1fr auto auto auto;
+}
+
+.pageset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.pageset .field {
+  flex: 1 1 150px;
+}
+
+.preset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.preset input {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}

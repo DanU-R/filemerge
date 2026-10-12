@@ -1,6 +1,11 @@
 import { PDFDocument } from '@cantoo/pdf-lib'
 import type { DecodedImage, ImageDecoder, MergeFailure, MergeProgress, MergeSource } from './types'
 import { A4, IMAGE_MARGIN } from './limits'
+import {
+  type PageSettings,
+  DEFAULT_PAGE_SETTINGS,
+  resolvePageSize,
+} from './pageSettings'
 
 export type { MergeFailure }
 
@@ -19,12 +24,12 @@ function describeError(err: unknown): string {
   return `Gagal diproses: ${msg}`
 }
 
-/** Hitung ukuran gambar agar muat di halaman A4 dengan proporsi benar (fit-to-page). */
+/** Hitung ukuran gambar agar muat di halaman dengan proporsi benar (fit-to-page). */
 export function fitImageOnPage(
   imgW: number,
   imgH: number,
-  page = A4,
-  margin = IMAGE_MARGIN,
+  page: { width: number; height: number } = A4,
+  margin: number = IMAGE_MARGIN,
 ): { width: number; height: number } {
   const maxW = page.width - margin * 2
   const maxH = page.height - margin * 2
@@ -58,18 +63,18 @@ async function appendPdf(
 async function appendImage(
   target: PDFDocument,
   decoded: DecodedImage,
+  settings: PageSettings,
 ): Promise<number> {
-  const page = target.addPage([A4.width, A4.height])
+  const pageSize = resolvePageSize(settings, decoded.width, decoded.height)
+  const page = target.addPage([pageSize.width, pageSize.height])
   const embedded =
     decoded.format === 'png'
       ? await target.embedPng(decoded.bytes)
       : await target.embedJpg(decoded.bytes)
-  // Hitung ukuran SEBELUM menutup bitmap/objek (mencegah akses ke sumber daya
-  // yang sudah dilepas bila decoder menutup bitmap lebih awal).
-  const { width, height } = fitImageOnPage(decoded.width, decoded.height)
+  const { width, height } = fitImageOnPage(decoded.width, decoded.height, pageSize, settings.margin)
   page.drawImage(embedded, {
-    x: (A4.width - width) / 2,
-    y: (A4.height - height) / 2,
+    x: (pageSize.width - width) / 2,
+    y: (pageSize.height - height) / 2,
     width,
     height,
   })
@@ -86,6 +91,7 @@ export async function mergeDocuments(
   decodeImage: ImageDecoder,
   onProgress?: (p: MergeProgress) => void,
   decrypt: (b: Uint8Array) => Promise<Uint8Array> = async (b) => b,
+  settings: PageSettings = DEFAULT_PAGE_SETTINGS,
 ): Promise<MergeResult> {
   const target = await PDFDocument.create()
   const failures: MergeFailure[] = []
@@ -104,7 +110,7 @@ export async function mergeDocuments(
         pages += await appendPdf(target, bytes, decrypt)
       } else {
         const decoded = await decodeImage(src.file)
-        pages += await appendImage(target, decoded)
+        pages += await appendImage(target, decoded, settings)
       }
     } catch (err) {
       failures.push({ id: src.id, name: src.name, reason: describeError(err) })

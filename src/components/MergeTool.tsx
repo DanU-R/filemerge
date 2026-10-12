@@ -5,6 +5,16 @@ import { runMerge } from '@/lib/mergeClient'
 import { validateFile, detectKind } from '@/lib/validate'
 import { sanitizeOutputName, sanitizeFileName } from '@/lib/sanitize'
 import { LIMITS, formatBytes, wouldExceedTotal } from '@/lib/limits'
+import {
+  DEFAULT_PAGE_SETTINGS,
+  PAGE_SIZE_OPTIONS,
+  ORIENTATION_OPTIONS,
+  MARGIN_OPTIONS,
+  type PageSettings,
+} from '@/lib/pageSettings'
+import { ReorderableList } from '@/components/ReorderableList'
+import PageSettingsPanel from '@/components/PageSettingsPanel'
+import PresetPanel, { type PresetRow } from '@/components/PresetPanel'
 import type { MergeSource, QueueItem } from '@/lib/types'
 
 const ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png'
@@ -27,8 +37,17 @@ export interface CloudDocItem {
   sizeBytes: number
 }
 
-export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem[] }) {
+export default function MergeTool({
+  cloudDocs = [],
+  presets: initialPresets = [],
+  isAuthed = false,
+}: {
+  cloudDocs?: CloudDocItem[]
+  presets?: PresetRow[]
+  isAuthed?: boolean
+}) {
   const [queue, setQueue] = useState<QueueState>({ items: [], errors: [] })
+  const [presets, setPresets] = useState<PresetRow[]>(initialPresets)
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<{ done: number; total: number; name: string } | null>(
     null,
@@ -42,6 +61,7 @@ export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem
     id: number
   } | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [pageSettings, setPageSettings] = useState<PageSettings>(DEFAULT_PAGE_SETTINGS)
   const inputRef = useRef<HTMLInputElement>(null)
   const lastUrlRef = useRef<string | null>(null)
   const itemsRef = useRef<QueueItem[]>([])
@@ -133,6 +153,7 @@ export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem
         name: sanitizeFileName(doc.displayName),
         kind: kind === 'pdf' ? 'pdf' : 'image',
         size: blob.size,
+        cloudId: doc.id,
       }
       setQueue((prev) => {
         if (prev.items.length >= LIMITS.MAX_FILES) {
@@ -158,8 +179,63 @@ export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem
     })
   }
 
+  // Drag-and-drop (Fase 5): pindahkan item dari index `from` ke `to`.
+  const reorder = (from: number, to: number) => {
+    setQueue((prev) => {
+      if (from === to || from < 0 || to < 0 || from >= prev.items.length || to >= prev.items.length) {
+        return prev
+      }
+      const next = [...prev.items]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return { ...prev, items: next }
+    })
+  }
+
   const remove = (id: string) =>
     setQueue((prev) => ({ ...prev, items: prev.items.filter((i) => i.id !== id) }))
+
+  // Fase 5: simpan susunan saat ini (dokumen akun) sebagai preset.
+  const savePreset = async (name: string) => {
+    const ids = items.filter((i) => i.cloudId).map((i) => ({ documentId: i.cloudId as string }))
+    if (ids.length === 0) return
+    try {
+      const res = await fetch('/api/presets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, items: ids }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setQueue((prev) => ({ ...prev, errors: [data.error || 'Gagal menyimpan preset.'] }))
+        return
+      }
+      setPresets((prev) => [{ id: data.preset.id, name: data.preset.name, items: ids.map((x, i) => ({ documentId: x.documentId, order: i })) }, ...prev])
+    } catch {
+      setQueue((prev) => ({ ...prev, errors: ['Gagal menyimpan preset.'] }))
+    }
+  }
+
+  const applyPreset = async (ids: string[]) => {
+    const docs = ids
+      .map((id) => cloudDocs.find((d) => d.id === id))
+      .filter((d): d is CloudDocItem => !!d)
+    if (docs.length === 0) {
+      setQueue((prev) => ({ ...prev, errors: ['Preset kosong atau dokumen sudah dihapus.'] }))
+      return
+    }
+    setQueue({ items: [], errors: [] })
+    for (const d of docs) await addCloudDoc(d)
+  }
+
+  const deletePreset = async (id: string) => {
+    try {
+      const res = await fetch(`/api/presets/${id}`, { method: 'DELETE' })
+      if (res.ok) setPresets((prev) => prev.filter((p) => p.id !== id))
+    } catch {
+      /* abaikan */
+    }
+  }
 
   const reset = () => {
     if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current)
@@ -187,6 +263,7 @@ export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem
       const merged = await runMerge({
         sources,
         outputName: out,
+        pageSettings,
         onProgress: (index, total, name) => setProgress({ done: index, total, name }),
       })
       const blob = new Blob([merged.bytes as BlobPart], { type: 'application/pdf' })
@@ -281,14 +358,20 @@ export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem
         </p>
       )}
 
-      <ol className="queue" data-testid="queue">
-        {items.map((item, index) => (
-          <li key={item.id} className="queue__item" data-testid="queue-item">
+      <ReorderableList
+        items={items}
+        onReorder={reorder}
+        className="queue"
+        renderItem={(item, index, handle) => (
+          <>
+            {handle}
             <span className="queue__index">{index + 1}</span>
             <span className="queue__name" title={item.name}>
               {item.name}
             </span>
-            <span className={`badge badge--${item.kind}`}>{item.kind === 'pdf' ? 'PDF' : 'Gambar'}</span>
+            <span className={`badge badge--${item.kind}`}>
+              {item.kind === 'pdf' ? 'PDF' : 'Gambar'}
+            </span>
             <span className="queue__size">{formatBytes(item.size)}</span>
             <span className="queue__actions">
               <button
@@ -318,15 +401,28 @@ export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem
                 ×
               </button>
             </span>
-          </li>
-        ))}
-      </ol>
+          </>
+        )}
+      />
 
       {items.length === 0 && (
         <p className="empty" data-testid="empty">
           Belum ada file. Tambahkan minimal satu PDF atau gambar untuk mulai.
         </p>
       )}
+
+      {isAuthed && (
+        <PresetPanel
+          presets={presets}
+          busy={busy}
+          canCreate={items.some((i) => i.cloudId)}
+          onCreate={(name) => void savePreset(name)}
+          onApply={(ids) => void applyPreset(ids)}
+          onDelete={(id) => void deletePreset(id)}
+        />
+      )}
+
+      <PageSettingsPanel value={pageSettings} onChange={setPageSettings} />
 
       <div className="controls">
         <label className="field">

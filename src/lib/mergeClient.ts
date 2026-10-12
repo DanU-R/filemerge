@@ -1,10 +1,12 @@
 import { mergeDocuments } from './pdfMerge'
 import { decodeImageForPdf } from './imageDecode'
+import { normalizePageSettings } from './pageSettings'
 import type { MergeFailure, MergeMessage, MergeSource } from './types'
 
 export interface RunMergeOptions {
   sources: MergeSource[]
   outputName: string
+  pageSettings?: unknown
   onProgress?: (index: number, total: number, name: string) => void
 }
 
@@ -70,14 +72,24 @@ function runInWorker(opts: RunMergeOptions): Promise<MergeOutcome> {
       else if (msg.type === 'error') finish(() => reject(new Error(msg.message)))
     }
     worker.onerror = () => finish(() => reject(new WorkerUnavailableError('worker-runtime')))
-    worker.postMessage({ sources: opts.sources, outputName: opts.outputName })
+    worker.postMessage({
+      sources: opts.sources,
+      outputName: opts.outputName,
+      pageSettings: opts.pageSettings,
+    })
   })
 }
 
 async function runOnMainThread(opts: RunMergeOptions): Promise<MergeOutcome> {
-  const result = await mergeDocuments(opts.sources, decodeImageForPdf, (p) => {
-    opts.onProgress?.(p.index, p.total, p.name)
-  })
+  const result = await mergeDocuments(
+    opts.sources,
+    decodeImageForPdf,
+    (p) => {
+      opts.onProgress?.(p.index, p.total, p.name)
+    },
+    undefined,
+    normalizePageSettings(opts.pageSettings as never),
+  )
   return {
     bytes: result.bytes,
     outputName: opts.outputName,

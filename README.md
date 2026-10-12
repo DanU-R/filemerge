@@ -19,7 +19,8 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 
 **Tanpa akun (publik)**
 - Gabung banyak PDF + gambar (JPG/JPEG/PNG) jadi satu PDF.
-- Urutkan dengan tombol naik/turun (drag-and-drop library ditunda).
+- Urutkan dengan **drag-and-drop** atau tombol naik/turun (aksesibilitas).
+- **Pengaturan halaman:** ukuran (A4 / Letter / sesuai gambar), orientasi, margin.
 - Orientasi EXIF diterapkan ke piksel; JPEG CMYK dikonversi ke RGB.
 - Validasi berbasis konten (magic bytes), bukan ekstensi.
 - PDF rusak/terenkripsi/kosong ditandai tanpa membuat aplikasi crash.
@@ -31,6 +32,7 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 - Daftar, cari, filter, ganti nama, unduh, hapus.
 - Kuota: 20 MB/file, 30 dokumen, 100 MB total per akun.
 - Pilih dokumen tersimpan untuk digabung (diunduh ke browser, diproses lokal).
+- **Preset susunan** — simpan urutan dokumen (mis. "Lamaran Kerja") dan terapkan kembali.
 - Isolasi data antar-akun (dokumen orang lain -> 404).
 
 ## Menjalankan lokal
@@ -98,6 +100,7 @@ package manager Bun), set env `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN` di Projec
 
 - [`docs/FileMerge-PRD-v0.3.md`](docs/FileMerge-PRD-v0.3.md) — PRD + arsitektur
 - [`docs/Fase1-Report.md`](docs/Fase1-Report.md) — laporan & audit Fase 1
+- [`docs/Fase2-4-Report.md`](docs/Fase2-4-Report.md) — laporan Fase 0, 2, 3, 4
 - [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md) — panduan deploy
 
 ## Lisensi

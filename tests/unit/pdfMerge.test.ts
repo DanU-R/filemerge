@@ -79,6 +79,31 @@ describe('fitImageOnPage', () => {
     expect(height).toBeLessThanOrEqual(841.89)
     expect(width).toBeLessThanOrEqual(595.28)
   })
+
+  it('menghormati ukuran halaman landscape kustom', () => {
+    const landscape = { width: 841.89, height: 595.28 }
+    const { width, height } = fitImageOnPage(100, 300, landscape, 24)
+    expect(width).toBeLessThanOrEqual(841.89 - 48)
+    expect(height).toBeLessThanOrEqual(595.28 - 48)
+  })
+})
+
+describe('mergeDocuments dengan pengaturan halaman', () => {
+  it('gambar memakai ukuran halaman dari settings (Letter landscape)', async () => {
+    const r = await mergeDocuments(
+      [src('1', 'image', PNG_1x1, 'b.png')],
+      decoder,
+      undefined,
+      undefined,
+      { pageSize: 'Letter', orientation: 'landscape', margin: 24 },
+    )
+    const s = Buffer.from(r.bytes).toString('latin1')
+    const boxes = [...s.matchAll(/\/MediaBox\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/g)]
+    expect(boxes.length).toBeGreaterThan(0)
+    // Letter landscape = 792 x 612
+    expect(Number(boxes[0][3])).toBeCloseTo(792, 0)
+    expect(Number(boxes[0][4])).toBeCloseTo(612, 0)
+  })
 })
 
 describe('batas ukuran file', () => {

@@ -19,8 +19,11 @@ export interface CloudDoc {
 
 export default async function MergePage() {
   let cloudDocs: CloudDoc[] = []
+  let presets: { id: string; name: string; items: unknown }[] = []
+  let isAuthed = false
   const user = await getCurrentUser()
   if (user) {
+    isAuthed = true
     const db = getDb()
     const docs = await db.orm.public.Document.where({ userId: user.id, status: 'READY' })
       .orderBy((d) => d.createdAt.desc())
@@ -31,6 +34,10 @@ export default async function MergePage() {
       category: d.category,
       sizeBytes: d.sizeBytes,
     }))
+    const presetRows = await db.orm.public.MergePreset.where({ userId: user.id })
+      .orderBy((p) => p.createdAt.desc())
+      .all()
+    presets = presetRows.map((p) => ({ id: p.id, name: p.name, items: p.items }))
   }
 
   return (
@@ -42,7 +49,7 @@ export default async function MergePage() {
           diproses di browser kamu.
         </p>
       </header>
-      <MergeTool cloudDocs={cloudDocs} />
+      <MergeTool cloudDocs={cloudDocs} presets={presets} isAuthed={isAuthed} />
     </main>
   )
 }

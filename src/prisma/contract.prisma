@@ -23,6 +23,7 @@ model User {
   updatedAt    temporal.updatedAt()
   documents    Document[]
   sessions     Session[]
+  presets      MergePreset[]
 }
 
 model Session {
@@ -45,4 +46,15 @@ model Document {
   status      DocStatus   @default(READY)
   createdAt   DateTime    @default(now())
   updatedAt   temporal.updatedAt()
+}
+
+// Fase 5: preset susunan — menyimpan referensi dokumen + urutan, bukan salinan file.
+model MergePreset {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  items     Json
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
 }

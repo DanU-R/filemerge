@@ -6,6 +6,8 @@ export interface QueueItem {
   name: string
   kind: SourceKind
   size: number
+  /** Bila item berasal dari dokumen tersimpan (Fase 3), simpan id-nya untuk preset. */
+  cloudId?: string
 }
 
 export interface MergeSource {
