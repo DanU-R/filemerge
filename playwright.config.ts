@@ -17,6 +17,11 @@ export default defineConfig({
     url: 'http://127.0.0.1:3100',
     reuseExistingServer: true,
     timeout: 120_000,
+    env: {
+      // Longgarkan batas pendaftaran agar suite E2E tidak saling memblokir.
+      // Uji rate limit memakai x-forwarded-for unik + batas login default.
+      RATE_LIMIT_REGISTER: '1000',
+    },
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

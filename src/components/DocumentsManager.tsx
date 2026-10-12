@@ -8,7 +8,9 @@ export interface DocRow {
   id: string
   displayName: string
   category: string
+  mimeType: string
   sizeBytes: number
+  createdAt: string
 }
 
 export interface Quota {
@@ -22,6 +24,25 @@ function fmt(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+
+function typeLabel(mime: string): string {
+  if (mime === 'application/pdf') return 'PDF'
+  if (mime === 'image/png') return 'PNG'
+  if (mime === 'image/jpeg') return 'JPG'
+  return mime
+}
+
+function fmtDate(value: string): string {
+  try {
+    return new Date(value).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  } catch {
+    return ''
+  }
 }
 
 export default function DocumentsManager({
@@ -38,6 +59,7 @@ export default function DocumentsManager({
   const [notice, setNotice] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [name, setName] = useState('')
   const [category, setCategory] = useState('LAINNYA')
@@ -113,6 +135,36 @@ export default function DocumentsManager({
     }
   }
 
+  async function replaceFile(id: string, label: string) {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png'
+    input.onchange = async () => {
+      const f = input.files?.[0]
+      if (!f) return
+      setBusy(true)
+      setError(null)
+      setNotice(null)
+      try {
+        const fd = new FormData()
+        fd.append('file', f)
+        const res = await fetch(`/api/documents/${id}`, { method: 'PUT', body: fd })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          setError(data.error || 'Gagal mengganti file.')
+          return
+        }
+        setNotice(`File "${label}" diperbarui.`)
+        startTransition(() => router.refresh())
+      } catch {
+        setError('Gagal mengganti file.')
+      } finally {
+        setBusy(false)
+      }
+    }
+    input.click()
+  }
+
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' })
     router.push('/')
@@ -125,7 +177,8 @@ export default function DocumentsManager({
     const q = query.trim().toLowerCase()
     const matchQ = !q || d.displayName.toLowerCase().includes(q)
     const matchC = !filter || d.category === filter
-    return matchQ && matchC
+    const matchT = !typeFilter || d.mimeType === typeFilter
+    return matchQ && matchC && matchT
   })
 
   return (
@@ -215,6 +268,17 @@ export default function DocumentsManager({
             </option>
           ))}
         </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          aria-label="Filter tipe"
+          data-testid="filter-type"
+        >
+          <option value="">Semua tipe</option>
+          <option value="application/pdf">PDF</option>
+          <option value="image/jpeg">JPG</option>
+          <option value="image/png">PNG</option>
+        </select>
       </div>
 
       {filtered.length === 0 ? (
@@ -233,7 +297,11 @@ export default function DocumentsManager({
               <span className="badge">
                 {CATEGORY_LABELS[d.category as keyof typeof CATEGORY_LABELS] ?? d.category}
               </span>
+              <span className="badge">{typeLabel(d.mimeType)}</span>
               <span className="muted small">{fmt(d.sizeBytes)}</span>
+              <span className="muted small" data-testid="doc-date">
+                {fmtDate(d.createdAt)}
+              </span>
               <span className="doclist__actions">
                 <a
                   className="icon"
@@ -243,6 +311,15 @@ export default function DocumentsManager({
                 >
                   ⤓
                 </a>
+                <button
+                  className="icon"
+                  type="button"
+                  aria-label={`Ganti file ${d.displayName}`}
+                  onClick={() => replaceFile(d.id, d.displayName)}
+                  data-testid="replace"
+                >
+                  ⇄
+                </button>
                 <button
                   className="icon"
                   type="button"

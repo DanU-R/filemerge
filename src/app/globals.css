@@ -616,3 +616,13 @@ a {
   background: var(--surface);
   color: var(--text);
 }
+
+.btn--danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.doclist__item {
+  grid-template-columns: 1fr auto auto auto auto auto;
+}

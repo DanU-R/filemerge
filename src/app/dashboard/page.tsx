@@ -28,7 +28,9 @@ export default async function DashboardPage() {
           id: d.id,
           displayName: d.displayName,
           category: d.category,
+          mimeType: d.mimeType,
           sizeBytes: d.sizeBytes,
+          createdAt: String(d.createdAt),
         }))}
         initialQuota={{
           usedBytes,

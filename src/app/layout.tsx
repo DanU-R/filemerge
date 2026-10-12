@@ -31,7 +31,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <span className="nav__links">
             <Link href="/merge">Merge</Link>
             {user ? (
-              <Link href="/dashboard">Dashboard</Link>
+              <>
+                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/settings">Akun</Link>
+              </>
             ) : (
               <Link href="/login">Masuk</Link>
             )}

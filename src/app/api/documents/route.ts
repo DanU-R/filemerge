@@ -8,6 +8,7 @@ import { detectKind } from '@/lib/validate'
 import { sanitizeFileName } from '@/lib/sanitize'
 import { DOC_CATEGORIES, DOC_LIMITS } from '@/lib/server/docLimits'
 import type { DocCategoryValue } from '@/lib/server/docLimits'
+import { rateLimit } from '@/lib/server/rateLimit'
 
 export const runtime = 'nodejs'
 
@@ -44,6 +45,15 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // SEC-08: batasi 60 unggahan per pengguna per jam.
+  const rl = rateLimit(`upload:${user.id}`, 60, 60 * 60 * 1000)
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: `Terlalu banyak unggahan. Coba lagi dalam ${rl.retryAfterSeconds} detik.` },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+    )
+  }
 
   const form = await req.formData().catch(() => null)
   if (!form) return NextResponse.json({ error: 'Form tidak valid.' }, { status: 400 })

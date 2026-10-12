@@ -28,12 +28,18 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 
 **Dengan akun**
 - Registrasi & login (email + password, hash bcrypt, sesi cookie HttpOnly).
+- **Rate limiting** login/registrasi/unggah (SEC-08) + **header keamanan** CSP/HSTS (SEC-09).
 - Upload dokumen dengan nama + kategori (CV, Identitas, Pendidikan, Sertifikat, Lainnya).
-- Daftar, cari, filter, ganti nama, unduh, hapus.
+- Daftar, cari, filter kategori **dan tipe**, ganti nama, **ganti file**, unduh, hapus.
+- Info ukuran + **tanggal upload** per dokumen.
 - Kuota: 20 MB/file, 30 dokumen, 100 MB total per akun.
 - Pilih dokumen tersimpan untuk digabung (diunduh ke browser, diproses lokal).
 - **Preset susunan** — simpan urutan dokumen (mis. "Lamaran Kerja") dan terapkan kembali.
 - Isolasi data antar-akun (dokumen orang lain -> 404).
+- **Account Settings** — ringkasan akun + **hapus akun** beserta semua data (konfirmasi password).
+
+**Pengaturan halaman saat merge**
+- Ukuran **A4 / Letter / Sesuai gambar**, orientasi tegak/mendatar, margin 0–48pt.
 
 ## Menjalankan lokal
 
@@ -102,6 +108,9 @@ package manager Bun), set env `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN` di Projec
 - [`docs/Fase1-Report.md`](docs/Fase1-Report.md) — laporan & audit Fase 1
 - [`docs/Fase2-4-Report.md`](docs/Fase2-4-Report.md) — laporan Fase 0, 2, 3, 4
 - [`docs/Fase5-Report.md`](docs/Fase5-Report.md) — laporan Fase 5
+- [`docs/Fase4-Report.md`](docs/Fase4-Report.md) — laporan Fase 4 (keamanan)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — panduan kontribusi
+- [`SECURITY.md`](SECURITY.md) — kebijakan keamanan
 - [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md) — panduan deploy
 
 ## Lisensi
