@@ -626,3 +626,13 @@ a {
 .doclist__item {
   grid-template-columns: 1fr auto auto auto auto auto;
 }
+
+/* Tombol ikon (unduh dll) harus tampak sama seperti tautan ikon sebelumnya. */
+button.icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  color: inherit;
+}

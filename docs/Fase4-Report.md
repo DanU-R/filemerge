@@ -29,7 +29,7 @@ Semua angka berasal dari eksekusi nyata.
 | **§11 Halaman** | `Account Settings` (`/settings`) + halaman Error (`error.tsx`, `global-error.tsx`). |
 | **§12.6 Hapus akun** | Alur penuh + UI konfirmasi ("ketik HAPUS" + password). |
 | **NFR-06** Kuota | Angka kuota ditampilkan di dashboard (count + bytes). |
-| **NFR-03** Retry | Unduhan memiliki penanganan kegagalan; batas kuota jelas. |
+| **NFR-03** Retry | `src/lib/resilientFetch.ts` — retry + backoff eksponensial (maks 3 percobaan) untuk upload/unduh/rename/ganti-file/preset/klik unduh. Hanya 408/429/5xx & error jaringan yang diulang; 4xx permanen tidak. Menghormati `Retry-After`; timeout per permintaan 30s; indikator "mencoba lagi…" di UI. |
 
 ### Konsistensi storage (PRD §15.4)
 - **Bug diperbaiki:** `deleteObject` semula `catch {}` sehingga kegagalan hapus objek
@@ -66,5 +66,6 @@ rate limit login → 429, `/settings` butuh login.
 - Reset password (FR-AU-04): **dibatalkan / out of scope** — aplikasi dipakai single-user,
   kehilangan password ditangani lewat penggantian `passwordHash` langsung di database
   (dokumentasi di `SECURITY.md`). Tidak ada layanan email yang diperlukan.
-- **NFR-03** auto-retry dengan backoff belum diimplementasi (baru try/catch + pesan error).
-- Rotasi/hapus halaman PDF, split, kompresi (Fase 5 opsional) belum dikerjakan.
+- **NFR-03** retry + backoff sudah diimplementasi (`src/lib/resilientFetch.ts`), termasuk
+  retry pada klik unduh dokumen. Rotasi/hapus halaman PDF, split, kompresi (Fase 5 opsional)
+  belum dikerjakan.

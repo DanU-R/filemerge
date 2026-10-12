@@ -117,7 +117,7 @@ test.describe('Fase 2/3/4 — akun & dokumen', () => {
     // A upload dokumen.
     await register(a, uniqueEmail('ac11a'))
     await uploadDoc(a, 'KTP Rahasia', 1)
-    const href = await a.locator('a[data-testid="download"]').first().getAttribute('href')
+    const href = await a.locator('[data-testid="download"]').first().getAttribute('data-href')
     const docId = href!.split('/').pop()!
 
     // B login lalu coba akses dokumen A.

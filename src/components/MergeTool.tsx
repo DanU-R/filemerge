@@ -15,6 +15,7 @@ import {
 import { ReorderableList } from '@/components/ReorderableList'
 import PageSettingsPanel from '@/components/PageSettingsPanel'
 import PresetPanel, { type PresetRow } from '@/components/PresetPanel'
+import { fetchWithRetry } from '@/lib/resilientFetch'
 import type { MergeSource, QueueItem } from '@/lib/types'
 
 const ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png'
@@ -135,7 +136,7 @@ export default function MergeTool({
   // Fase 3: unduh dokumen tersimpan ke browser, lalu masuk antrean (diproses lokal).
   const addCloudDoc = useCallback(async (doc: CloudDocItem) => {
     try {
-      const res = await fetch(`/api/documents/${doc.id}`)
+      const res = await fetchWithRetry(`/api/documents/${doc.id}`)
       if (!res.ok) {
         setQueue((prev) => ({ ...prev, errors: [`Gagal mengambil "${doc.displayName}".`] }))
         return
@@ -200,7 +201,7 @@ export default function MergeTool({
     const ids = items.filter((i) => i.cloudId).map((i) => ({ documentId: i.cloudId as string }))
     if (ids.length === 0) return
     try {
-      const res = await fetch('/api/presets', {
+      const res = await fetchWithRetry('/api/presets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, items: ids }),
@@ -230,7 +231,7 @@ export default function MergeTool({
 
   const deletePreset = async (id: string) => {
     try {
-      const res = await fetch(`/api/presets/${id}`, { method: 'DELETE' })
+      const res = await fetchWithRetry(`/api/presets/${id}`, { method: 'DELETE' })
       if (res.ok) setPresets((prev) => prev.filter((p) => p.id !== id))
     } catch {
       /* abaikan */

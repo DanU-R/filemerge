@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { fetchJsonWithRetry } from '@/lib/resilientFetch'
 
 export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const router = useRouter()
@@ -19,20 +20,15 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch(endpoint, {
+      await fetchJsonWithRetry(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setError(data.error || 'Terjadi kesalahan.')
-        return
-      }
       router.push('/dashboard')
       router.refresh()
-    } catch {
-      setError('Tidak dapat menghubungi server.')
+    } catch (err) {
+      setError(err instanceof Error && err.message ? err.message : 'Tidak dapat menghubungi server.')
     } finally {
       setBusy(false)
     }

@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { DOC_CATEGORIES, CATEGORY_LABELS, DOC_LIMITS } from '@/lib/server/docLimits'
+import { downloadWithRetry, fetchJsonWithRetry, HttpError } from '@/lib/resilientFetch'
 
 export interface DocRow {
   id: string
@@ -63,9 +64,18 @@ export default function DocumentsManager({
   const [file, setFile] = useState<File | null>(null)
   const [name, setName] = useState('')
   const [category, setCategory] = useState('LAINNYA')
+  const [retrying, setRetrying] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const working = busy || pending
+
+  /** Pesan ramah dari error apa pun (NFR-03). */
+  function msg(err: unknown, fallback: string): string {
+    if (err instanceof HttpError) return err.message || fallback
+    if (err instanceof Error && /abort|network|fetch/i.test(err.message))
+      return 'Koneksi terputus. Periksa jaringan lalu coba lagi.'
+    return fallback
+  }
 
   async function upload(e: React.FormEvent) {
     e.preventDefault()
@@ -78,20 +88,20 @@ export default function DocumentsManager({
       fd.append('file', file)
       fd.append('name', name || file.name)
       fd.append('category', category)
-      const res = await fetch('/api/documents', { method: 'POST', body: fd })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setError(data.error || 'Upload gagal.')
-        return
-      }
+      const data = await fetchJsonWithRetry<{ document: { displayName: string } }>(
+        '/api/documents',
+        { method: 'POST', body: fd },
+        { onRetry: () => setRetrying(true) },
+      )
       setNotice(`Dokumen "${data.document.displayName}" tersimpan.`)
       setFile(null)
       setName('')
       if (fileRef.current) fileRef.current.value = ''
       startTransition(() => router.refresh())
-    } catch {
-      setError('Upload gagal.')
+    } catch (err) {
+      setError(msg(err, 'Upload gagal.'))
     } finally {
+      setRetrying(false)
       setBusy(false)
     }
   }
@@ -102,14 +112,17 @@ export default function DocumentsManager({
     setError(null)
     setNotice(null)
     try {
-      const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        setError('Gagal menghapus.')
-        return
-      }
+      await fetchJsonWithRetry(
+        `/api/documents/${id}`,
+        { method: 'DELETE' },
+        { onRetry: () => setRetrying(true) },
+      )
       setNotice('Dokumen dihapus.')
       startTransition(() => router.refresh())
+    } catch (err) {
+      setError(msg(err, 'Gagal menghapus.'))
     } finally {
+      setRetrying(false)
       setBusy(false)
     }
   }
@@ -121,17 +134,36 @@ export default function DocumentsManager({
     setError(null)
     setNotice(null)
     try {
-      const res = await fetch(`/api/documents/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: next, category: currentCat }),
-      })
-      if (res.ok) {
-        setNotice('Nama diperbarui.')
-        startTransition(() => router.refresh())
-      } else setError('Gagal memperbarui.')
+      await fetchJsonWithRetry(
+        `/api/documents/${id}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ displayName: next, category: currentCat }),
+        },
+        { onRetry: () => setRetrying(true) },
+      )
+      setNotice('Nama diperbarui.')
+      startTransition(() => router.refresh())
+    } catch (err) {
+      setError(msg(err, 'Gagal memperbarui.'))
     } finally {
+      setRetrying(false)
       setBusy(false)
+    }
+  }
+
+  async function download(id: string, label: string) {
+    setError(null)
+    setNotice(null)
+    try {
+      await downloadWithRetry(`/api/documents/${id}`, label, {
+        onRetry: () => setRetrying(true),
+      })
+    } catch (err) {
+      setError(msg(err, 'Gagal mengunduh.'))
+    } finally {
+      setRetrying(false)
     }
   }
 
@@ -148,17 +180,17 @@ export default function DocumentsManager({
       try {
         const fd = new FormData()
         fd.append('file', f)
-        const res = await fetch(`/api/documents/${id}`, { method: 'PUT', body: fd })
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) {
-          setError(data.error || 'Gagal mengganti file.')
-          return
-        }
+        await fetchJsonWithRetry(
+          `/api/documents/${id}`,
+          { method: 'PUT', body: fd },
+          { onRetry: () => setRetrying(true) },
+        )
         setNotice(`File "${label}" diperbarui.`)
         startTransition(() => router.refresh())
-      } catch {
-        setError('Gagal mengganti file.')
+      } catch (err) {
+        setError(msg(err, 'Gagal mengganti file.'))
       } finally {
+        setRetrying(false)
         setBusy(false)
       }
     }
@@ -197,6 +229,11 @@ export default function DocumentsManager({
       {error && (
         <p className="alert alert--error" role="alert" data-testid="dash-error">
           {error}
+        </p>
+      )}
+      {retrying && (
+        <p className="muted small" role="status" data-testid="retrying">
+          Koneksi bermasalah — mencoba lagi…
         </p>
       )}
       {notice && (
@@ -303,14 +340,16 @@ export default function DocumentsManager({
                 {fmtDate(d.createdAt)}
               </span>
               <span className="doclist__actions">
-                <a
+                <button
                   className="icon"
-                  href={`/api/documents/${d.id}`}
+                  type="button"
                   aria-label={`Unduh ${d.displayName}`}
+                  onClick={() => download(d.id, d.displayName)}
                   data-testid="download"
+                  data-href={`/api/documents/${d.id}`}
                 >
                   ⤓
-                </a>
+                </button>
                 <button
                   className="icon"
                   type="button"
