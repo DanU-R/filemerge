@@ -11,3 +11,5 @@ playwright-report
 .vercel
 .env*
 public/pdf.worker.min.mjs
+.superdesign
+.claude/
