@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { runMerge } from '@/lib/mergeClient'
-import { validateFile } from '@/lib/validate'
+import { validateFile, detectKind } from '@/lib/validate'
 import { sanitizeOutputName, sanitizeFileName } from '@/lib/sanitize'
 import { LIMITS, formatBytes, wouldExceedTotal } from '@/lib/limits'
 import type { MergeSource, QueueItem } from '@/lib/types'
@@ -20,7 +20,14 @@ function newId(): string {
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-export default function MergeTool() {
+export interface CloudDocItem {
+  id: string
+  displayName: string
+  category: string
+  sizeBytes: number
+}
+
+export default function MergeTool({ cloudDocs = [] }: { cloudDocs?: CloudDocItem[] }) {
   const [queue, setQueue] = useState<QueueState>({ items: [], errors: [] })
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<{ done: number; total: number; name: string } | null>(
@@ -103,6 +110,42 @@ export default function MergeTool() {
       items: [...prev.items, ...accepted],
       errors: nextErrors,
     }))
+  }, [])
+
+  // Fase 3: unduh dokumen tersimpan ke browser, lalu masuk antrean (diproses lokal).
+  const addCloudDoc = useCallback(async (doc: CloudDocItem) => {
+    try {
+      const res = await fetch(`/api/documents/${doc.id}`)
+      if (!res.ok) {
+        setQueue((prev) => ({ ...prev, errors: [`Gagal mengambil "${doc.displayName}".`] }))
+        return
+      }
+      const blob = await res.blob()
+      const head = new Uint8Array(await blob.slice(0, 16).arrayBuffer())
+      const kind = detectKind(head)
+      if (!kind) {
+        setQueue((prev) => ({ ...prev, errors: [`"${doc.displayName}" tidak dikenali.`] }))
+        return
+      }
+      const item: QueueItem = {
+        id: newId(),
+        file: new File([blob], doc.displayName, { type: blob.type }),
+        name: sanitizeFileName(doc.displayName),
+        kind: kind === 'pdf' ? 'pdf' : 'image',
+        size: blob.size,
+      }
+      setQueue((prev) => {
+        if (prev.items.length >= LIMITS.MAX_FILES) {
+          return { ...prev, errors: [`Antrean penuh (maks ${LIMITS.MAX_FILES} file).`] }
+        }
+        if (wouldExceedTotal(prev.items.reduce((s, i) => s + i.size, 0), item.size)) {
+          return { ...prev, errors: ['Total antrean melebihi batas.'] }
+        }
+        return { ...prev, items: [...prev.items, item], errors: [] }
+      })
+    } catch {
+      setQueue((prev) => ({ ...prev, errors: [`Gagal mengambil "${doc.displayName}".`] }))
+    }
   }, [])
 
   const move = (index: number, dir: -1 | 1) => {
@@ -202,6 +245,26 @@ export default function MergeTool() {
           {LIMITS.MAX_FILES} file, total {formatBytes(LIMITS.MAX_TOTAL_BYTES)}.
         </p>
       </section>
+
+      {cloudDocs.length > 0 && (
+        <section className="cloud" data-testid="cloud-docs">
+          <h2 className="cloud__title">Pilih dari dokumen saya</h2>
+          <ul className="cloud__list">
+            {cloudDocs.map((d) => (
+              <li key={d.id}>
+                <button
+                  type="button"
+                  className="btn btn--small"
+                  onClick={() => void addCloudDoc(d)}
+                  data-testid="cloud-add"
+                >
+                  + {d.displayName}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {errors.length > 0 && (
         <ul className="alert alert--error" role="alert" data-testid="errors">

@@ -1,3 +1,5 @@
+// Prisma 8 `temporal.updatedAt()` memerlukan global Temporal (belum ada di Bun/Node).
+import 'temporal-polyfill/global'
 import 'dotenv/config'
 import postgres from '@prisma/orm-postgres/runtime'
 

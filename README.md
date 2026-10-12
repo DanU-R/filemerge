@@ -1,60 +1,105 @@
 # FileMerge
 
-Aplikasi web open-source (MIT) untuk menggabungkan PDF dan gambar menjadi satu PDF.
-**Penggabungan berjalan sepenuhnya di browser** (Web Worker + `@cantoo/pdf-lib`) — isi
-dokumen tidak dikirim ke server. Tanpa login.
+Aplikasi web open-source (MIT) untuk **menggabungkan PDF dan gambar menjadi satu PDF**,
+dengan opsi **menyimpan dokumen pribadi** (CV, KTP, KK, ijazah, sertifikat) di akun
+pengguna agar bisa dipakai ulang tanpa upload berulang.
 
-> Status: **Fase 1 (MVP merger) selesai & teruji.** Fase 2+ (akun, database, penyimpanan
-> dokumen) ditahan sampai keputusan desain diambil. Lihat `docs/FileMerge-PRD-v0.3.md`
-> dan `docs/Fase1-Report.md`.
+**Live:** https://filemerge-seven.vercel.app
 
-## Fitur Fase 1
-- Gabung banyak PDF + gambar (JPG/JPEG/PNG) menjadi satu PDF.
-- Urutkan dengan tombol naik/turun (aksesibilitas; drag-and-drop library ditunda).
-- Orientasi EXIF diterapkan ke piksel (foto portrait tidak terputar).
+## Cara kerjanya
+
+| Bagian | Tempat | Catatan |
+|---|---|---|
+| Penggabungan PDF/gambar | **Browser** (Web Worker + `@cantoo/pdf-lib`) | Isi dokumen **tidak dikirim ke server** |
+| Frontend / API | **Vercel** (Next.js 16 App Router) | |
+| Metadata (akun, daftar dokumen) | **Prisma Postgres** | Tidak menyimpan isi file |
+| File dokumen | **Vercel Blob** (private) | Diunduh via endpoint terotorisasi |
+
+## Fitur
+
+**Tanpa akun (publik)**
+- Gabung banyak PDF + gambar (JPG/JPEG/PNG) jadi satu PDF.
+- Urutkan dengan tombol naik/turun (drag-and-drop library ditunda).
+- Orientasi EXIF diterapkan ke piksel; JPEG CMYK dikonversi ke RGB.
 - Validasi berbasis konten (magic bytes), bukan ekstensi.
-- Penanganan PDF rusak/terenkripsi/kosong tanpa crash.
-- Batas: 50 MB/file, 200 MB total, 50 file (peringatan lunak di 120 MB).
-- Proses di Web Worker dengan fallback otomatis ke main thread.
+- PDF rusak/terenkripsi/kosong ditandai tanpa membuat aplikasi crash.
+- Batas: 50 MB/file, 200 MB total, 50 file.
 
-## Prasyarat
-- Node.js 24+ dan [Bun](https://bun.sh) 1.3.x (`packageManager: bun@1.3.14`).
+**Dengan akun**
+- Registrasi & login (email + password, hash bcrypt, sesi cookie HttpOnly).
+- Upload dokumen dengan nama + kategori (CV, Identitas, Pendidikan, Sertifikat, Lainnya).
+- Daftar, cari, filter, ganti nama, unduh, hapus.
+- Kuota: 20 MB/file, 30 dokumen, 100 MB total per akun.
+- Pilih dokumen tersimpan untuk digabung (diunduh ke browser, diproses lokal).
+- Isolasi data antar-akun (dokumen orang lain -> 404).
 
-## Jalankan lokal
+## Menjalankan lokal
+
+Prasyarat: Node.js 24+ dan [Bun](https://bun.sh) 1.3.x.
+
 ```bash
 bun install
-bun run dev          # http://localhost:3000  -> /merge
+cp .env.example .env      # isi DATABASE_URL (Prisma Postgres) + BLOB_READ_WRITE_TOKEN
+bun run contract:emit     # generate tipe dari contract.prisma
+bun run db:init           # apply schema ke database
+bun run dev               # http://localhost:3000
 ```
-Fase 1 **tidak** memerlukan database atau `.env`. Untuk pengembangan template/DB
-(Prisma 8), salin `.env.example` ke `.env` dan isi `DATABASE_URL` (jangan commit `.env`).
+
+> Fitur tanpa akun berjalan tanpa `.env`. Akun & dokumen butuh `DATABASE_URL` dan
+> `BLOB_READ_WRITE_TOKEN`.
 
 ## Perintah
+
 ```bash
+bun run dev          # dev server
+bun run build        # contract:emit && next build
+bun run start        # jalankan build standalone
 bun run typecheck    # tsc --noEmit
 bun run lint         # eslint
-bun run test         # vitest (unit)
-bun run test:e2e     # playwright (chromium + firefox)
-bun run build        # contract:emit && next build
-bun run bench:limits # benchmark batas file (butuh server di :3100)
+bun run test         # unit test (vitest)
+bun run test:e2e     # e2e (playwright: chromium + firefox)
+bun run bench:limits # benchmark batas file merge
 ```
 
 ## Struktur
-- `src/lib/` — logika murni: `limits`, `sanitize`, `validate`, `pdfMerge`, `imageDecode`,
-  `merge.worker`, `mergeClient`.
-- `src/components/MergeTool.tsx` — UI merger.
-- `src/app/` — `page` (landing), `merge`, `privacy`, `not-found`, `layout`.
-- `tests/unit`, `tests/e2e`, `tests/bench`.
 
-## Deploy ke Prisma Compute
-Konfigurasi deploy (jangan diubah tanpa alasan kuat): `next.config.ts`
-(`output: "standalone"`), `module.ts`, `src/service.ts`, `prisma-composer.config.ts`,
-`prisma.config.ts`, `.github/workflows/prisma-deploy.yml`, `bunfig.toml`
-(`linker = "hoisted"`). Push ke branch akan memicu Composer.
-
-```bash
-bun run compute:connect   # hubungkan repo ke Prisma Cloud (sekali)
-bun run compute:open      # buka service yang berjalan
+```
+src/app/            halaman: /, /merge, /login, /register, /dashboard, /privacy
+src/app/api/        route handlers: auth (register/login/logout/me), documents
+src/components/     MergeTool (merger), AuthForm, DocumentsManager
+src/lib/            logika murni: limits, sanitize, validate, pdfMerge, imageDecode
+src/lib/server/     auth (sesi), storage (Blob), docLimits
+src/prisma/         contract.prisma + client Prisma 8
+tests/unit|e2e|bench
 ```
 
+## Database & contract (Prisma 8)
+
+Repo memakai **Prisma 8 contract-first** (bukan `schema.prisma` + `@prisma/client`):
+
+```bash
+bun run contract:emit                          # src/prisma/contract.prisma -> contract.json/.d.ts
+bun run migration:plan --name <perubahan>      # tulis migrasi
+bun run db:init                                # apply awal + sign
+bun run db:update                              # apply perubahan
+```
+
+Catatan Prisma 8 RC: `cuid()` belum ada (pakai `uuid()`/`nanoid()`), `$extends` belum ada,
+dan kolom `timestamptz` memerlukan nilai `Temporal.Instant` (polyfill Temporal dimuat di
+`src/prisma/db.ts`).
+
+## Deploy
+
+Lihat [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md). Ringkas: Vercel (framework Next.js,
+package manager Bun), set env `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN` di Project Settings.
+`next.config.ts` menyalakan `output: "standalone"` hanya di luar Vercel.
+
+## Dokumen
+
+- [`docs/FileMerge-PRD-v0.3.md`](docs/FileMerge-PRD-v0.3.md) — PRD + arsitektur
+- [`docs/Fase1-Report.md`](docs/Fase1-Report.md) — laporan & audit Fase 1
+- [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md) — panduan deploy
+
 ## Lisensi
-MIT — berlaku untuk kode, bukan izin mempublikasikan dokumen pengguna.
+
+MIT — berlaku untuk kode saja, bukan izin mempublikasikan dokumen pengguna.

@@ -4,8 +4,12 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
-    "post": {
-      "model": "Post",
+    "document": {
+      "model": "Document",
+      "namespace": "public"
+    },
+    "session": {
+      "model": "Session",
       "namespace": "public"
     },
     "user": {
@@ -16,21 +20,68 @@
   "domain": {
     "namespaces": {
       "public": {
-        "models": {
-          "Post": {
-            "fields": {
-              "authorId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
+        "enum": {
+          "DocCategory": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "CV",
+                "value": "CV"
               },
-              "content": {
-                "nullable": true,
+              {
+                "name": "IDENTITAS",
+                "value": "IDENTITAS"
+              },
+              {
+                "name": "PENDIDIKAN",
+                "value": "PENDIDIKAN"
+              },
+              {
+                "name": "SERTIFIKAT",
+                "value": "SERTIFIKAT"
+              },
+              {
+                "name": "LAINNYA",
+                "value": "LAINNYA"
+              }
+            ]
+          },
+          "DocStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PENDING",
+                "value": "PENDING"
+              },
+              {
+                "name": "READY",
+                "value": "READY"
+              },
+              {
+                "name": "FAILED",
+                "value": "FAILED"
+              },
+              {
+                "name": "PENDING_DELETION",
+                "value": "PENDING_DELETION"
+              }
+            ]
+          }
+        },
+        "models": {
+          "Document": {
+            "fields": {
+              "category": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "DocCategory",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "createdAt": {
@@ -40,21 +91,48 @@
                   "kind": "scalar"
                 }
               },
+              "displayName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "mimeType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sizeBytes": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
-              "published": {
+              "status": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/bool@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "DocStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
-              "title": {
+              "storageKey": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -67,14 +145,21 @@
                   "codecId": "pg/timestamptz-temporal@1",
                   "kind": "scalar"
                 }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
-              "author": {
+              "user": {
                 "cardinality": "N:1",
                 "on": {
                   "localFields": [
-                    "authorId"
+                    "userId"
                   ],
                   "targetFields": [
                     "id"
@@ -88,30 +173,106 @@
             },
             "storage": {
               "fields": {
-                "authorId": {
-                  "column": "authorId"
-                },
-                "content": {
-                  "column": "content"
+                "category": {
+                  "column": "category"
                 },
                 "createdAt": {
                   "column": "createdAt"
                 },
+                "displayName": {
+                  "column": "displayName"
+                },
                 "id": {
                   "column": "id"
                 },
-                "published": {
-                  "column": "published"
+                "mimeType": {
+                  "column": "mimeType"
                 },
-                "title": {
-                  "column": "title"
+                "sizeBytes": {
+                  "column": "sizeBytes"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "storageKey": {
+                  "column": "storageKey"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
                 }
               },
               "namespaceId": "public",
-              "table": "post"
+              "table": "document"
+            }
+          },
+          "Session": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "session"
             }
           },
           "User": {
@@ -133,12 +294,12 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
-              "name": {
-                "nullable": true,
+              "passwordHash": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -150,28 +311,36 @@
                   "codecId": "pg/timestamptz-temporal@1",
                   "kind": "scalar"
                 }
-              },
-              "username": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
               }
             },
             "relations": {
-              "posts": {
+              "documents": {
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
                     "id"
                   ],
                   "targetFields": [
-                    "authorId"
+                    "userId"
                   ]
                 },
                 "to": {
-                  "model": "Post",
+                  "model": "Document",
+                  "namespace": "public"
+                }
+              },
+              "sessions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "Session",
                   "namespace": "public"
                 }
               }
@@ -187,14 +356,11 @@
                 "id": {
                   "column": "id"
                 },
-                "name": {
-                  "column": "name"
+                "passwordHash": {
+                  "column": "passwordHash"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
-                },
-                "username": {
-                  "column": "username"
                 }
               },
               "namespaceId": "public",
@@ -210,17 +376,34 @@
       "public": {
         "entries": {
           "table": {
-            "post": {
-              "columns": {
-                "authorId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": false
+            "document": {
+              "checks": [
+                {
+                  "expression": "\"category\" IN ('CV', 'IDENTITAS', 'PENDIDIKAN', 'SERTIFIKAT', 'LAINNYA')",
+                  "name": "document_category_check_5bea0175",
+                  "prefix": "document_category_check"
                 },
-                "content": {
+                {
+                  "expression": "\"status\" IN ('PENDING', 'READY', 'FAILED', 'PENDING_DELETION')",
+                  "name": "document_status_check_3373b639",
+                  "prefix": "document_status_check"
+                }
+              ],
+              "columns": {
+                "category": {
                   "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "LAINNYA"
+                  },
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "DocCategory",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -231,25 +414,42 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "displayName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "mimeType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "sizeBytes": {
                   "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "published": {
-                  "codecId": "pg/bool@1",
+                "status": {
+                  "codecId": "pg/text@1",
                   "default": {
                     "kind": "literal",
-                    "value": false
+                    "value": "READY"
                   },
-                  "nativeType": "bool",
-                  "nullable": false
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "DocStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
-                "title": {
+                "storageKey": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
@@ -258,16 +458,22 @@
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
                   "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
                 }
               },
               "foreignKeys": [
                 {
+                  "onDelete": "cascade",
                   "source": {
                     "columns": [
-                      "authorId"
+                      "userId"
                     ],
                     "namespaceId": "public",
-                    "tableName": "post"
+                    "tableName": "document"
                   },
                   "target": {
                     "columns": [
@@ -281,10 +487,79 @@
               "indexes": [
                 {
                   "columns": [
-                    "authorId"
+                    "userId"
                   ],
-                  "name": "post_authorId_idx_e47547ed",
-                  "prefix": "post_authorId_idx",
+                  "name": "document_userId_idx_a489d58a",
+                  "prefix": "document_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "storageKey"
+                  ]
+                }
+              ]
+            },
+            "session": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "session"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "session_userId_idx_a489d58a",
+                  "prefix": "session_userId_idx",
                   "unique": false
                 }
               ],
@@ -312,28 +587,19 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
+                },
+                "passwordHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
                   "nullable": false
-                },
-                "username": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
                 }
               },
               "foreignKeys": [],
@@ -348,12 +614,28 @@
                   "columns": [
                     "email"
                   ]
-                },
-                {
-                  "columns": [
-                    "username"
-                  ]
                 }
+              ]
+            }
+          },
+          "valueSet": {
+            "DocCategory": {
+              "kind": "valueSet",
+              "values": [
+                "CV",
+                "IDENTITAS",
+                "PENDIDIKAN",
+                "SERTIFIKAT",
+                "LAINNYA"
+              ]
+            },
+            "DocStatus": {
+              "kind": "valueSet",
+              "values": [
+                "PENDING",
+                "READY",
+                "FAILED",
+                "PENDING_DELETION"
               ]
             }
           }
@@ -362,12 +644,23 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a8c2b44a66375905c448d355506c489aba8f8920c398bd3c95adb4fed318e32b"
+    "storageHash": "7f7899b579c163d5a4dab3005bf3d678919c855d1d8b359b0da29ceb11ea8145"
   },
   "execution": {
-    "executionHash": "922703ae7404f83e6dbe461f0e1e4ae45f0f0941cd22165189457647c1a6866c",
+    "executionHash": "29c4606e9cdfe916f6fa201f021d1c8fd33863b6b729d3fe2f3f3ee2db7ed464",
     "mutations": {
       "defaults": [
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "document"
+          }
+        },
         {
           "onCreate": {
             "id": "instantNow",
@@ -380,7 +673,29 @@
           "ref": {
             "column": "updatedAt",
             "namespace": "public",
-            "table": "post"
+            "table": "document"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "session"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "user"
           }
         },
         {

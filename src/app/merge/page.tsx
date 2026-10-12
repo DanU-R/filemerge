@@ -1,12 +1,38 @@
 import type { Metadata } from 'next'
 import MergeTool from '@/components/MergeTool'
+import { getCurrentUser } from '@/lib/server/auth'
+import { getDb } from '@/prisma/db'
 
 export const metadata: Metadata = {
   title: 'PDF Merger — FileMerge',
   description: 'Gabungkan PDF dan gambar di browser tanpa login.',
 }
 
-export default function MergePage() {
+export const dynamic = 'force-dynamic'
+
+export interface CloudDoc {
+  id: string
+  displayName: string
+  category: string
+  sizeBytes: number
+}
+
+export default async function MergePage() {
+  let cloudDocs: CloudDoc[] = []
+  const user = await getCurrentUser()
+  if (user) {
+    const db = getDb()
+    const docs = await db.orm.public.Document.where({ userId: user.id, status: 'READY' })
+      .orderBy((d) => d.createdAt.desc())
+      .all()
+    cloudDocs = docs.map((d) => ({
+      id: d.id,
+      displayName: d.displayName,
+      category: d.category,
+      sizeBytes: d.sizeBytes,
+    }))
+  }
+
   return (
     <main className="page">
       <header className="page__head">
@@ -16,7 +42,7 @@ export default function MergePage() {
           diproses di browser kamu.
         </p>
       </header>
-      <MergeTool />
+      <MergeTool cloudDocs={cloudDocs} />
     </main>
   )
 }

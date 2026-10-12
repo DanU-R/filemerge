@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import './globals.css'
+import { getCurrentUser } from '@/lib/server/auth'
 
 export const metadata: Metadata = {
   title: 'FileMerge — Gabungkan PDF & gambar',
@@ -9,7 +10,14 @@ export const metadata: Metadata = {
     'Gabungkan PDF dan gambar menjadi satu berkas, diproses di browser tanpa login.',
 }
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  let user = null
+  try {
+    user = await getCurrentUser()
+  } catch {
+    user = null
+  }
+
   return (
     <html lang="id">
       <body>
@@ -22,6 +30,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </Link>
           <span className="nav__links">
             <Link href="/merge">Merge</Link>
+            {user ? (
+              <Link href="/dashboard">Dashboard</Link>
+            ) : (
+              <Link href="/login">Masuk</Link>
+            )}
             <Link href="/privacy">Privasi</Link>
           </span>
         </nav>
