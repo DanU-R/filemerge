@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { applyEditsBytes, compressPdfBytes, inspectPdfBytes, splitPdfBytes } from '@/lib/pageToolsClient'
 import { parseRanges, type PageEdit, type PageInfo } from '@/lib/pageTools'
 import { detectKind } from '@/lib/validate'
 import { sanitizeOutputName, sanitizeFileName } from '@/lib/sanitize'
+import { renderThumbnails, revokeThumbnails, type Thumbnail } from '@/lib/pdfThumbnails'
 
 const ACCEPT = '.pdf,application/pdf'
 
@@ -41,6 +42,22 @@ function baseName(name: string): string {
 }
 
 /**
+ * Putar thumbnail secara visual mengikuti rotasi aktif. Ini cerminan akurat dari
+ * hasil akhir: halaman A4 tegak (595×842) yang diputar 90° memang menjadi melintang.
+ */
+function thumbStyle(t: Thumbnail, rotate: number): React.CSSProperties {
+  const swapped = rotate % 180 !== 0
+  const boxW = swapped ? t.height : t.width
+  const boxH = swapped ? t.width : t.height
+  return {
+    width: boxW,
+    height: boxH,
+    transform: `rotate(${rotate}deg)`,
+    transition: 'transform 160ms ease',
+  }
+}
+
+/**
  * Alat PDF (Fase 5 lanjutan): rotasi/hapus per halaman, pecah (split), kompresi.
  * Semua diproses di browser — isi dokumen tidak dikirim ke server.
  */
@@ -51,6 +68,20 @@ export default function PdfToolsPanel() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [thumbs, setThumbs] = useState<Thumbnail[] | null>(null)
+  const [thumbStatus, setThumbStatus] = useState<'idle' | 'rendering' | 'ready' | 'failed'>('idle')
+
+  // Object URL thumbnail harus di-revoke agar tidak bocor memori.
+  const thumbsRef = useRef<Thumbnail[] | null>(null)
+  useEffect(() => {
+    thumbsRef.current = thumbs
+  }, [thumbs])
+  useEffect(
+    () => () => {
+      revokeThumbnails(thumbsRef.current)
+    },
+    [],
+  )
 
   const loadBytes = useCallback(async (name: string, bytes: Uint8Array) => {
     setBusy(true)
@@ -61,9 +92,24 @@ export default function PdfToolsPanel() {
       setLoaded({ name, bytes, pages })
       setEdits({})
       setRanges(`1-${Math.max(1, pages.length)}`)
+
+      // Preview visual (tidak wajib): kegagalan render tidak boleh menggagalkan
+      // fungsi inti. Bila pdf.js gagal dimuat, editor tetap berguna tanpa gambar.
+      setThumbs(null)
+      setThumbStatus('rendering')
+      try {
+        const rendered = await renderThumbnails(bytes, { maxWidth: 200, yieldMs: 0 })
+        setThumbs(rendered)
+        setThumbStatus('ready')
+      } catch {
+        setThumbs(null)
+        setThumbStatus('failed')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal membaca PDF.')
       setLoaded(null)
+      setThumbs(null)
+      setThumbStatus('idle')
     } finally {
       setBusy(false)
     }
@@ -86,6 +132,13 @@ export default function PdfToolsPanel() {
     setEdits((prev) => ({
       ...prev,
       [index]: { ...prev[index], rotate: ((prev[index]?.rotate ?? 0) + deg) % 360 },
+    }))
+  }
+  /** Rotasi 90° dengan umpan balik berkala: baca nilai state terbaru saat diklik. */
+  const rotate90 = (index: number) => {
+    setEdits((prev) => ({
+      ...prev,
+      [index]: { ...prev[index], rotate: ((prev[index]?.rotate ?? 0) + 90) % 360 },
     }))
   }
   const toggleDelete = (index: number) => {
@@ -207,55 +260,89 @@ export default function PdfToolsPanel() {
           <p className="muted small" data-testid="pdftools-summary">
             {loaded.name} · {loaded.pages.length} halaman · {keptCount} dipakai
           </p>
+          {thumbStatus === 'rendering' && (
+            <p className="muted small" data-testid="thumbs-status">
+              Menyiapkan pratinjau…
+            </p>
+          )}
+          {thumbStatus === 'failed' && (
+            <p className="muted small" data-testid="thumbs-status">
+              Pratinjau tidak tersedia — editor tetap bisa dipakai.
+            </p>
+          )}
 
-          <ul className="doclist" data-testid="pdftools-pages">
+          <ul className="thumbgrid" data-testid="pdftools-pages">
             {loaded.pages.map((p) => {
               const e = edits[p.index] ?? {}
+              const t = thumbs?.[p.index]
+              const angle = ((p.rotation + (e.rotate ?? 0)) % 360 + 360) % 360
               return (
-                <li key={p.index} className="doclist__item" data-testid="pdftools-page">
-                  <span className="doclist__name">
-                    Hal {p.index + 1}{' '}
-                    <span className="muted small">
-                      ({Math.round(p.width)}×{Math.round(p.height)}
-                      {e.rotate ? ` · +${e.rotate}°` : ''}
-                      {p.rotation ? ` · asal ${p.rotation}°` : ''})
+                <li
+                  key={p.index}
+                  className={`thumb${e.deleted ? ' thumb--deleted' : ''}`}
+                  data-testid="pdftools-page"
+                >
+                  <div className="thumb__frame" data-testid="thumb-frame">
+                    {t ? (
+                      <img
+                        className="thumb__img"
+                        src={t.url}
+                        alt={`Pratinjau halaman ${p.index + 1}`}
+                        style={thumbStyle(t, angle)}
+                        data-testid="thumb-img"
+                      />
+                    ) : (
+                      <span className="thumb__ph" aria-hidden="true">
+                        {p.index + 1}
+                      </span>
+                    )}
+                  </div>
+                  <div className="thumb__meta">
+                    <span className="thumb__label">
+                      Hal {p.index + 1}{' '}
+                      <span className="muted small">
+                        {Math.round(p.width)}×{Math.round(p.height)}
+                        {angle ? ` · ${angle}°` : ''}
+                      </span>
                     </span>
-                  </span>
-                  {e.deleted ? (
-                    <span className="badge" data-testid="page-deleted">
-                      dihapus
-                    </span>
-                  ) : (
-                    <>
-                      <button
-                        className="icon"
-                        type="button"
-                        aria-label={`Putar halaman ${p.index + 1} 90 derajat`}
-                        onClick={() => rotate(p.index, 90)}
-                        data-testid="page-rotate-90"
-                      >
-                        ↻
-                      </button>
-                      <button
-                        className="icon"
-                        type="button"
-                        aria-label={`Putar halaman ${p.index + 1} 180 derajat`}
-                        onClick={() => rotate(p.index, 180)}
-                        data-testid="page-rotate-180"
-                      >
-                        ⟳
-                      </button>
-                    </>
-                  )}
-                  <button
-                    className="icon icon--danger"
-                    type="button"
-                    aria-label={`${e.deleted ? 'Kembalikan' : 'Hapus'} halaman ${p.index + 1}`}
-                    onClick={() => toggleDelete(p.index)}
-                    data-testid="page-delete"
-                  >
-                    {e.deleted ? '↺' : '×'}
-                  </button>
+                  </div>
+                  <div className="thumb__actions">
+                    {e.deleted ? (
+                      <span className="badge" data-testid="page-deleted">
+                        dihapus
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          className="icon"
+                          type="button"
+                          aria-label={`Putar halaman ${p.index + 1} 90 derajat`}
+                          onClick={() => rotate90(p.index)}
+                          data-testid="page-rotate-90"
+                        >
+                          ↻
+                        </button>
+                        <button
+                          className="icon"
+                          type="button"
+                          aria-label={`Putar halaman ${p.index + 1} 180 derajat`}
+                          onClick={() => rotate(p.index, 180)}
+                          data-testid="page-rotate-180"
+                        >
+                          ⟳
+                        </button>
+                      </>
+                    )}
+                    <button
+                      className="icon icon--danger"
+                      type="button"
+                      aria-label={`${e.deleted ? 'Kembalikan' : 'Hapus'} halaman ${p.index + 1}`}
+                      onClick={() => toggleDelete(p.index)}
+                      data-testid="page-delete"
+                    >
+                      {e.deleted ? '↺' : '×'}
+                    </button>
+                  </div>
                 </li>
               )
             })}
