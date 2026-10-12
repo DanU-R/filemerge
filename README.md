@@ -101,6 +101,7 @@ package manager Bun), set env `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN` di Projec
 - [`docs/FileMerge-PRD-v0.3.md`](docs/FileMerge-PRD-v0.3.md) — PRD + arsitektur
 - [`docs/Fase1-Report.md`](docs/Fase1-Report.md) — laporan & audit Fase 1
 - [`docs/Fase2-4-Report.md`](docs/Fase2-4-Report.md) — laporan Fase 0, 2, 3, 4
+- [`docs/Fase5-Report.md`](docs/Fase5-Report.md) — laporan Fase 5
 - [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md) — panduan deploy
 
 ## Lisensi
