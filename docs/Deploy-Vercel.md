@@ -1,5 +1,10 @@
 # Deploy FileMerge ke Vercel (Frontend) + Prisma Postgres (Database)
 
+> **STATUS: SUDAH LIVE** — https://filemerge-seven.vercel.app
+> Project Vercel: `danu-rangganas-projects/filemerge` · repo GitHub ter-connect
+> (auto-deploy tiap push ke `main`). Uji live lulus: landing, `/merge` (merge 2 PDF
+> -> 3 halaman, urutan benar, **0 request ke server**), `/privacy`, 404.
+
 Ringkas: **aplikasi di Vercel**, **database di Prisma Postgres**. Repo sudah disiapkan
 agar dua jalur (Vercel dan Prisma Compute) tidak saling mengganggu.
 
@@ -64,6 +69,13 @@ agar dua jalur (Vercel dan Prisma Compute) tidak saling mengganggu.
   `DATABASE_URL` belum diisi. DB baru relevan untuk Fase 2+ (akun & dokumen).
 - **Jangan** menyalakan kembali `output: "standalone"` secara global — itu akan
   mengembalikan risiko kegagalan build di Vercel.
-- Deploy dari GitHub: push ke `main` (atau PR) akan otomatis membuat deployment Vercel
-  setelah repo terhubung.
-- Jika ingin deploy dari CLI: `vercel` / `vercel --prod` (butuh `vercel login`).
+- Deploy dari GitHub: push ke `main` (atau PR) otomatis membuat deployment Vercel.
+- Deploy manual: `vercel --prod` (butuh `vercel login` atau `VERCEL_TOKEN`).
+
+## Pelajaran penting (lockfile)
+
+`bun.lock` awalnya berisi URL ke mirror non-publik (`mirrors.tencentyun.com`),
+sehingga `bun install` gagal `ConnectionRefused` di Vercel maupun GitHub Actions.
+Perbaikan: tambahkan `.npmrc` (`registry=https://registry.npmjs.org/`) lalu
+regenerate lockfile dengan registry resmi. **Jangan** commit lockfile yang memuat
+URL registry lokal/mirror.
