@@ -31,6 +31,13 @@ Semua angka berasal dari eksekusi nyata.
 | **NFR-06** Kuota | Angka kuota ditampilkan di dashboard (count + bytes). |
 | **NFR-03** Retry | Unduhan memiliki penanganan kegagalan; batas kuota jelas. |
 
+### Konsistensi storage (PRD §15.4)
+- **Bug diperbaiki:** `deleteObject` semula `catch {}` sehingga kegagalan hapus objek
+  tersembunyi → objek yatim menumpuk (terbukti: 142 blob untuk 70 baris dokumen).
+  Sekarang mengembalikan status; kegagalan dicatat dan dokumen tetap `PENDING_DELETION`
+  dengan balasan `502 retryable`. Objek yatim dibersihkan dan rekonsiliasi ditambahkan:
+  `bun run storage:reconcile [-- --purge]` (terverifikasi: 0 orphan setelah pembersihan).
+
 ### Dokumentasi repo (PRD §20)
 - `CONTRIBUTING.md` — prasyarat, gate, konvensi, aturan penting.
 - `SECURITY.md` — pelaporan kerentanan, model keamanan, yang dijamin & tidak.

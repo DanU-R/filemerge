@@ -1,5 +1,6 @@
 import 'server-only'
 import { del, get, put } from '@vercel/blob'
+import { storagePath } from '@/lib/storageKey'
 
 /**
  * Abstraksi penyimpanan file. Provider saat ini: Vercel Blob (private).
@@ -8,10 +9,7 @@ import { del, get, put } from '@vercel/blob'
  * `storageKey` selalu dibuat server (UUID), tidak pernah dari nama file.
  */
 
-function prefix(userId: string, key: string): string {
-  // Namespace per pengguna -> isolasi di level path juga.
-  return `u/${userId}/${key}`
-}
+const prefix = storagePath
 
 export async function putObject(
   userId: string,
@@ -27,11 +25,25 @@ export async function putObject(
   })
 }
 
-export async function deleteObject(userId: string, key: string): Promise<void> {
+/**
+ * Hapus objek. Mengembalikan `true` bila berhasil ATAU objek memang tidak ada
+ * (idempoten), `false` bila gagal karena sebab lain (mis. token/network).
+ *
+ * Sengaja TIDAK menelan semua error: PRD §15.4 mewajibkan kegagalan hapus objek
+ * terlihat agar dokumen dapat ditandai `PENDING_DELETION` dan dicoba ulang.
+ * (Bug lama: `catch {}` menyembunyikan kegagalan hapus sehingga menyisakan
+ * objek yatim di storage.)
+ */
+export async function deleteObject(userId: string, key: string): Promise<boolean> {
   try {
     await del(prefix(userId, key))
-  } catch {
-    // Objek mungkin sudah tidak ada -> idempoten.
+    return true
+  } catch (err) {
+    const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase()
+    // Objek tidak ada = sudah bersih, anggap sukses.
+    if (msg.includes('not found') || msg.includes('404')) return true
+    console.error('deleteObject gagal', { userId, key })
+    return false
   }
 }
 

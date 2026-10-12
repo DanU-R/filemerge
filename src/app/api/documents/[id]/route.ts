@@ -76,11 +76,23 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   if (!doc) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const db = getDb()
-  // Tandai dulu (kegagalan sebagian tidak menyisakan metadata menggantung).
+  // PRD 15.4: tandai dulu, lalu hapus objek. Bila hapus objek gagal, baris tetap
+  // PENDING_DELETION (disembunyikan dari UI) dan dilaporkan untuk dicoba ulang,
+  // supaya tidak ada metadata menggantung yang menunjuk objek yang masih ada.
   await db.orm.public.Document.where({ id, userId: user.id }).update({
     status: 'PENDING_DELETION',
   })
-  await deleteObject(user.id, doc.storageKey)
+  const ok = await deleteObject(user.id, doc.storageKey)
+  if (!ok) {
+    return NextResponse.json(
+      {
+        error:
+          'File belum dapat dihapus dari penyimpanan. Dokumen disembunyikan dan akan dicoba lagi.',
+        retryable: true,
+      },
+      { status: 502 },
+    )
+  }
   await db.orm.public.Document.where({ id, userId: user.id }).delete()
   return NextResponse.json({ ok: true })
 }

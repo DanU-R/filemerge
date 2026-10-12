@@ -13,6 +13,7 @@
     "db:update": "prisma db update",
     "db:seed": "tsx src/prisma/seed.ts",
     "account:password": "tsx scripts/set-password.ts",
+    "storage:reconcile": "tsx scripts/reconcile-storage.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
