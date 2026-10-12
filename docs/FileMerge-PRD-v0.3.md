@@ -128,7 +128,7 @@ Prioritas: **P0** = MVP wajib, **P1** = penting, **P2** = lanjutan.
 | FR-AU-01 | P1 | Registrasi email + password | Validasi format email dan kekuatan password; duplikat email ditolak dengan pesan aman. **Catatan Prisma 8: jangan andalkan kode error P2002 (belum tersedia) — pakai pre-check + penanganan unique constraint alternatif.** |
 | FR-AU-02 | P1 | Login/logout, penanganan sesi | Sesi berakhir saat logout; cookie HttpOnly, Secure, SameSite |
 | FR-AU-03 | P1 | Proteksi halaman dashboard | Akses tanpa sesi dialihkan ke login; API mengembalikan 401 |
-| FR-AU-04 | P2 | Reset password | Hanya aktif jika layanan email terverifikasi |
+| FR-AU-04 | — | ~~Reset password~~ **DIBATALKAN (out of scope)** | Aplikasi dipakai single-user yang menguasai akunnya. Kehilangan password ditangani dengan mengganti `passwordHash` di database (prosedur admin terdokumentasi di `SECURITY.md`). Tidak ada layanan email yang dibutuhkan. |
 | FR-AU-05 | P1 | Password tidak pernah plaintext | Hash (argon2id/bcrypt) atau dikelola provider; terbukti lewat review kode |
 | FR-AU-06 | P0 | Merge dasar tanpa login | Fase 1 berfungsi tanpa sesi |
 

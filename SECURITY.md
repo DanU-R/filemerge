@@ -1,5 +1,12 @@
 # Security Policy
 
+## Akun & kata sandi
+- Password disimpan sebagai hash **bcrypt**. Tidak ada reset via email (di luar cakupan,
+  aplikasi single-user).
+- **Lupa password?** Jalankan `bun run account:password <email> <password-baru>` pada
+  lingkungan dengan `DATABASE_URL`. Perintah ini mengganti hash dan mencabut semua sesi lama.
+- Selalu pakai HTTPS saat login; cookie sesi `HttpOnly` + `Secure` di produksi.
+
 ## Melaporkan kerentanan
 Jangan membuka issue publik untuk masalah keamanan. Laporkan secara privat ke pemelihara
 proyek (lihat kontak di repositori) dengan menyertakan:

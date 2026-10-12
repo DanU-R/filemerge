@@ -38,6 +38,10 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 - Isolasi data antar-akun (dokumen orang lain -> 404).
 - **Account Settings** — ringkasan akun + **hapus akun** beserta semua data (konfirmasi password).
 
+> Aplikasi ini dipakai **single-user**. Tidak ada reset password via email. Bila lupa
+> password: `bun run account:password <email> <password-baru>` (mengganti hash dan
+> mencabut semua sesi lama). Lihat [`SECURITY.md`](SECURITY.md).
+
 **Pengaturan halaman saat merge**
 - Ukuran **A4 / Letter / Sesuai gambar**, orientasi tegak/mendatar, margin 0–48pt.
 

@@ -1,9 +1,11 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
-import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { getDb } from '@/prisma/db'
+import { hashPassword, normalizeEmail, verifyPassword } from '@/lib/password'
+
+export { hashPassword, normalizeEmail, verifyPassword }
 
 export const SESSION_COOKIE = 'fm_session'
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 hari
@@ -11,14 +13,6 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 hari
 export interface SessionUser {
   id: string
   email: string
-}
-
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10)
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash)
 }
 
 /** Buat sesi baru di DB dan set cookie HttpOnly. */
@@ -73,9 +67,4 @@ export async function destroySession(): Promise<void> {
     await db.orm.public.Session.where({ id: token }).delete().catch(() => {})
   }
   jar.delete(SESSION_COOKIE)
-}
-
-/** Normalisasi email agar unik case-insensitive. */
-export function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase()
 }

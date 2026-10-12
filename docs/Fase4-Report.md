@@ -56,5 +56,8 @@ rate limit login → 429, `/settings` butuh login.
 - Rate limiting berjalan **per-instance** (serverless) — bukan terpusat. Untuk produksi
   skala besar, ganti dengan penyimpanan bersama (mis. Redis/Upstash).
 - **NFR-04 (Safari/iOS)** belum diuji pada perangkat nyata — dikecualikan atas permintaan.
-- Reset password (FR-AU-04) masih tertunda — butuh keputusan layanan email.
+- Reset password (FR-AU-04): **dibatalkan / out of scope** — aplikasi dipakai single-user,
+  kehilangan password ditangani lewat penggantian `passwordHash` langsung di database
+  (dokumentasi di `SECURITY.md`). Tidak ada layanan email yang diperlukan.
+- **NFR-03** auto-retry dengan backoff belum diimplementasi (baru try/catch + pesan error).
 - Rotasi/hapus halaman PDF, split, kompresi (Fase 5 opsional) belum dikerjakan.

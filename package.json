@@ -12,6 +12,7 @@
     "db:init": "prisma db init",
     "db:update": "prisma db update",
     "db:seed": "tsx src/prisma/seed.ts",
+    "account:password": "tsx scripts/set-password.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
