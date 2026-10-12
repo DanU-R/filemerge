@@ -16,8 +16,22 @@ pernah dikirim ke server.
   `applyPageEdits`.
 - Rotasi 90°/180° per halaman, digabung dengan rotasi asli file (mis. asal 90° + 180° = 270°).
 - Hapus halaman per halaman dengan opsi kembalikan (undo) sebelum diterapkan.
-- UI menampilkan indeks, ukuran (pt), dan rotasi aktif per halaman.
+- **Pratinjau visual:** setiap halaman dirender sebagai thumbnail asli (pdf.js) dan rotasi
+  terlihat langsung di pratinjau — bukan sekadar angka derajat. Rotasi ditampilkan lewat
+  CSS transform dengan kotak yang bertukar (A4 tegak → melintang), cerminan akurat hasil akhir.
 - Menolak bila semua halaman dihapus (minimal 1 halaman) — mencegah PDF kosong.
+
+### 1b. Renderer pratinjau (pdf.js)
+- `src/lib/pdfThumbnails.ts`: render thumbnail per halaman, berkelompok (concurrency 2) agar
+  UI responsif. Resource dibersihkan (`page.cleanup` → `doc.cleanup` → `task.destroy`;
+  di pdf.js v6 `destroy()` ada di loading task, bukan document proxy). Object URL
+  di-revoke saat ganti dokumen/unmount (cegah kebocoran memori).
+- Worker pdf.js disalin ke `public/` oleh `scripts/copy-pdfjs-worker.mjs` (dijalankan pada
+  `predev`/`prebuild`) agar **same-origin** — CSP kita (`worker-src 'self' blob:`) memblokir
+  worker eksternal. Salinan di-gitignore.
+- **Degradasi anggun:** bila render pratinjau gagal (mis. worker diblokir), editor tetap
+  berfungsi penuh dan menampilkan pesan "Pratinjau tidak tersedia". Pratinjau adalah
+  tambahan, bukan syarat.
 
 ### 2. Pecah (split) PDF
 - `splitPdf` + `parseRanges`: spesifikasi rentang `"1-3, 5, 7-9"` (1-based, inklusif).
@@ -60,23 +74,30 @@ Semua diverifikasi ulang di produksi setelah perbaikan (bukan hanya unit test).
 | Unit (vitest) | **70/70** (10 file) — +17 untuk pageTools & compress |
 | Lint | **exit 0** |
 | Build | **exit 0** |
-| E2E Playwright | **90/90** (45 tes × Chromium + Firefox) |
+| E2E Playwright | **96/96** (48 tes × Chromium + Firefox) |
 
-E2E alat PDF (8 tes): daftar halaman, hapus 1 halaman (verifikasi 2 halaman pada hasil),
+E2E alat PDF (11 tes): daftar halaman, hapus 1 halaman (verifikasi 2 halaman pada hasil),
 tolak bila semua dihapus, rotasi (`/Rotate 90` + halaman utuh), split (tiap bagian dibaca
 dan dihitung halamannya), rentang tidak valid, kompres (nama + halaman + laporan),
-file bukan PDF ditolak.
+file bukan PDF ditolak, **pratinjau dirender (gambar termuat)**, **rotasi mengubah pratinjau
+secara visual**, **pratinjau gagal tetap bisa mengedit (degradasi anggun)**.
 
-## Verifikasi produksi (deployment `738dcce`)
+## Verifikasi produksi (deployment `30671e8`)
 
-PDF 4 halaman uji → hapus halaman 2 → **3 halaman**, nama `scanktp.pdf`;
-rotasi 90° → `/Rotate 90` ada, **3 halaman utuh**; split `1-2, 3` → **2 file**
-(`scanktp-bagian-1.pdf`, `scanktp-bagian-2.pdf`) dengan halaman **1** dan **2**;
-kompres → `scanktp-kompres.pdf`, 3 halaman, laporan jujur. **0 page error.**
+Worker pdf.js: **HTTP 200** `application/javascript` (same-origin). CSP mengandung
+`worker-src 'self' blob:`. PDF 4→3 halaman uji: **3 thumbnail dirender** (`naturalWidth 200`),
+rotasi mengubah kotak `198×265` → `265×198` dengan sudut berputar, label `· 90°`,
+hapus/split/kompres berfungsi, **0 page error**.
+
+Sebelumnya (`738dcce`): hapus 4→3 halaman, rotasi `/Rotate 90` dengan halaman utuh,
+split `1-2,3` → 2 file berisi 1 dan 2 halaman, kompres jujur — semua tanpa error.
 
 ## Keterbatasan
 
 - Kompresi hanya lossless (metadata + object streams). Penghematan kecil untuk PDF yang
   sudah padat. Kompresi agresif sengaja tidak dipakai (lihat alasan di atas).
-- Editor halaman tidak menyediakan preview visual (hanya indeks + ukuran + rotasi).
+- Pratinjau adalah thumbnail statis hasil render awal; setelah rotasi/hapus diterapkan,
+  gambar dimuat ulang dari hasil sehingga pratinjau selalu mencerminkan dokumen terkini.
+- Menambah `pdfjs-dist` (~1,2 MB worker disalin ke `public/`) — hanya dimuat saat panel
+  alat PDF membuka sebuah dokumen, dan kegagalannya tidak menghalangi fungsi inti.
 - **NFR-04 (Safari/iOS perangkat nyata)** tetap di luar cakupan atas permintaan operator.

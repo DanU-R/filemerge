@@ -22,6 +22,8 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 - Urutkan dengan **drag-and-drop** atau tombol naik/turun (aksesibilitas).
 - **Pengaturan halaman:** ukuran (A4 / Letter / sesuai gambar), orientasi, margin.
 - **Alat PDF:** putar/hapus halaman per halaman, **pecah (split)** berdasarkan rentang, **kompres**.
+  Editor menampilkan **pratinjau visual tiap halaman** (thumbnail asli); rotasi terlihat
+  langsung di pratinjau.
 - Orientasi EXIF diterapkan ke piksel; JPEG CMYK dikonversi ke RGB.
 - Validasi berbasis konten (magic bytes), bukan ekstensi.
 - PDF rusak/terenkripsi/kosong ditandai tanpa membuat aplikasi crash.
