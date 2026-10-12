@@ -584,9 +584,9 @@ Catatan jujur untuk Privacy Policy: dokumen di cloud **tidak dienkripsi end-to-e
 | **2 — Akun & storage** | Registrasi/login, dashboard, upload, kategori, pencarian, private storage, kontrol akses | **✅ Selesai (docs/Fase2-4-Report.md)** — AC-08 lulus |
 | **3 — Integrasi dokumen tersimpan** | Pilih dokumen cloud untuk merge | **✅ Selesai** — AC-09, AC-10 lulus |
 | **4 — Keamanan & stabilisasi** | Tes otorisasi, kegagalan, PDF rusak, scan secret, lintas perangkat | **✅ Selesai** — AC-11–16 lulus (kecuali Safari/iOS belum diuji) |
-| **5 — Lanjutan** | Pengaturan halaman, drag-and-drop urutan, preset susunan | **✅ Selesai (docs/Fase5-Report.md)** — sisanya (rotasi/split/kompresi) opsional |
+| **5 — Lanjutan** | Pengaturan halaman, drag-and-drop, preset, **alat PDF (rotasi/hapus halaman, split, kompres)** | **✅ Selesai (docs/Fase5-Report.md, docs/Fase6-Report.md)** |
 
-**Status:** Fase 0–5 selesai & LIVE di https://filemerge-seven.vercel.app.
+**Status:** Fase 0–6 selesai & LIVE di https://filemerge-seven.vercel.app.
 
 Dokumen repo yang direncanakan: `README.md`, `LICENSE` (MIT), `CONTRIBUTING.md`, `SECURITY.md`, `.env.example`, panduan instalasi lokal, panduan deployment, dokumentasi arsitektur, Privacy Policy.
 

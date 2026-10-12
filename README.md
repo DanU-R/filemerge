@@ -114,6 +114,7 @@ package manager Bun), set env `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN` di Projec
 - [`docs/Fase2-4-Report.md`](docs/Fase2-4-Report.md) — laporan Fase 0, 2, 3, 4
 - [`docs/Fase5-Report.md`](docs/Fase5-Report.md) — laporan Fase 5
 - [`docs/Fase4-Report.md`](docs/Fase4-Report.md) — laporan Fase 4 (keamanan)
+- [`docs/Fase6-Report.md`](docs/Fase6-Report.md) — laporan Fase 6 (alat PDF lanjutan)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — panduan kontribusi
 - [`SECURITY.md`](SECURITY.md) — kebijakan keamanan
 - [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md) — panduan deploy
