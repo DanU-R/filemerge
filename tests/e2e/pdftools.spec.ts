@@ -51,6 +51,13 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
     await page.click('[data-testid="pdftools-apply"]')
     const d = await dl
     expect(d.suggestedFilename()).toMatch(/\.pdf$/)
+    expect(d.suggestedFilename()).not.toMatch(/\.pdf\.pdf$/)
+    // Hasil harus punya 2 halaman (1 dari 3 dihapus).
+    const stream = await d.createReadStream()
+    const chunks: Buffer[] = []
+    for await (const c of stream) chunks.push(Buffer.from(c))
+    const s = Buffer.concat(chunks).toString('latin1')
+    expect([...s.matchAll(/\/Type\s*\/Page[^s]/g)].length).toBe(2)
   })
 
   test('tolak saat semua halaman dihapus', async ({ page }) => {
@@ -66,7 +73,6 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
     await page.goto(BASE + '/merge')
     await pick(page, await pdfBytes([200, 300]))
     await page.locator('[data-testid="page-rotate-90"]').first().click()
-    await expect(page.locator('[data-testid="pdftools-summary"]')).toBeVisible()
     await expect(page.locator('[data-testid="pdftools-page"]').first()).toContainText('+90°')
 
     const dl = page.waitForEvent('download', { timeout: 40000 })
@@ -77,19 +83,31 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
     for await (const c of stream) chunks.push(Buffer.from(c))
     const s = Buffer.concat(chunks).toString('latin1')
     expect(s).toMatch(/\/Rotate\s+90/)
+    // Halaman tetap 2 (tidak ada yang hilang).
+    expect([...s.matchAll(/\/Type\s*\/Page[^s]/g)].length).toBe(2)
   })
 
-  test('pecah PDF menjadi beberapa bagian', async ({ page }) => {
+  test('pecah PDF menghasilkan tiap bagian (unduhan tidak hilang)', async ({ page }) => {
     await page.goto(BASE + '/merge')
     await pick(page, await pdfBytes([200, 200, 200, 200]), 'empat.pdf')
     await page.fill('[data-testid="split-ranges"]', '1-2, 4')
-    const dls: Promise<import('@playwright/test').Download>[] = []
-    page.on('download', (d) => dls.push(Promise.resolve(d)))
+    const files: { name: string; bytes: Buffer }[] = []
+    page.on('download', async (dl) => {
+      const st = await dl.createReadStream()
+      const chunks: Buffer[] = []
+      for await (const c of st) chunks.push(Buffer.from(c))
+      files.push({ name: dl.suggestedFilename(), bytes: Buffer.concat(chunks) })
+    })
     await page.click('[data-testid="split-run"]')
     await expect(page.locator('[data-testid="pdftools-notice"]')).toContainText('2 file', {
       timeout: 40000,
     })
-    expect(dls.length).toBe(2)
+    await expect.poll(() => files.length, { timeout: 15000 }).toBe(2)
+    const counts = files
+      .map((f) => [...f.bytes.toString('latin1').matchAll(/\/Type\s*\/Page[^s]/g)].length)
+      .sort()
+    expect(counts).toEqual([1, 2])
+    expect(files.every((f) => /\.pdf$/.test(f.name) && !/\.pdf\.pdf$/.test(f.name))).toBe(true)
   })
 
   test('rentang tidak valid memberi pesan jelas', async ({ page }) => {
@@ -102,12 +120,18 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
     })
   })
 
-  test('kompres PDF menghasilkan file valid + laporan jujur', async ({ page }) => {
+  test('kompres PDF: nama benar, file valid, laporan jujur', async ({ page }) => {
     await page.goto(BASE + '/merge')
     await pick(page, await pdfBytes([200, 200, 200]), 'kompres.pdf')
     const dl = page.waitForEvent('download', { timeout: 40000 })
     await page.click('[data-testid="compress-run"]')
-    await dl
+    const d = await dl
+    expect(d.suggestedFilename()).toBe('kompres-kompres.pdf')
+    const stream = await d.createReadStream()
+    const chunks: Buffer[] = []
+    for await (const c of stream) chunks.push(Buffer.from(c))
+    // Hasil tetap PDF valid dengan jumlah halaman sama.
+    expect([...Buffer.concat(chunks).toString('latin1').matchAll(/\/Type\s*\/Page[^s]/g)].length).toBe(3)
     await expect(page.locator('[data-testid="pdftools-notice"]')).toContainText(/hemat|penghematan/i)
   })
 

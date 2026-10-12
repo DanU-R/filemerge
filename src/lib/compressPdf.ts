@@ -7,19 +7,24 @@ export interface CompressResult {
   pages: number
   /** Rasio penghematan (0..1). 0 = tidak ada penghematan. */
   savedRatio: number
+  /** Metode yang benar-benar dipakai. */
+  method: 'lossless' | 'none'
 }
 
 /**
- * Kompresi PDF di browser (Fase 5 lanjutan).
+ * Kompresi PDF di browser.
  *
- * Pendekatan: buang metadata (info dict + XMP) dan simpan ulang dengan objek
- * yang dipadatkan (`useObjectStreams`). Ini kosmetik tapi gratis dan aman untuk
- * dokumen administratif — TIDAK menurunkan kualitas halaman/gambar.
+ * Pendekatan: buang metadata (info dict + XMP) dan simpan ulang dengan object
+ * streams (`useObjectStreams`). Penghematannya **kecil tapi pasti**, dan kualitas
+ * halaman/gambar tidak tersentuh — penting untuk dokumen administratif (KTP,
+ * ijazah) yang harus tetap terbaca dan teksnya tetap bisa dicari.
  *
- * Catatan jujur: ini bukan kompresor agresif. Re-encode gambar beresolusi tinggi
- * di luar cakupan (butuh rasterisasi halaman) dan berisiko menurunkan keterbacaan
- * dokumen identitas. Fungsi mengembalikan `savedRatio` nyata; UI menampilkan
- * apa adanya, termasuk bila hasilnya sama besar.
+ * Keputusan desain: kompresi agresif (rasterisasi halaman) sengaja TIDAK dipakai.
+ * Cara itu memang memperkecil file jauh lebih banyak, tetapi (a) memerlukan
+ * renderer halaman (pdf.js, dependency berat) dan (b) membuat teks tidak lagi
+ * dapat dicari serta menurunkan ketajaman — kerugian nyata untuk dokumen
+ * identitas. Fungsi ini melaporkan `savedRatio` apa adanya; bila tidak ada
+ * penghematan, file asli dikembalikan.
  */
 export async function compressPdf(
   bytes: Uint8Array,
@@ -53,12 +58,25 @@ export async function compressPdf(
   const out = await doc.save({ useObjectStreams: true })
   const originalBytes = bytes.length
   const compressedBytes = out.length
-  const savedRatio = originalBytes > 0 ? Math.max(0, 1 - compressedBytes / originalBytes) : 0
 
   // Bila hasilnya justru lebih besar, kembalikan yang asli (tidak merugikan pengguna).
   if (compressedBytes >= originalBytes) {
-    return { bytes, originalBytes, compressedBytes: originalBytes, pages, savedRatio: 0 }
+    return {
+      bytes,
+      originalBytes,
+      compressedBytes: originalBytes,
+      pages,
+      savedRatio: 0,
+      method: 'none',
+    }
   }
 
-  return { bytes: out, originalBytes, compressedBytes, pages, savedRatio }
+  return {
+    bytes: out,
+    originalBytes,
+    compressedBytes,
+    pages,
+    savedRatio: 1 - compressedBytes / originalBytes,
+    method: 'lossless',
+  }
 }

@@ -26,6 +26,16 @@ function downloadBytes(bytes: Uint8Array, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 
+/**
+ * Tunggu unduhan selesai sebelum melanjutkan. Beberapa browser membatalkan
+ * unduhan yang dibuat terlalu cepat berturut-turut (bug nyata: dua bagian split
+ * hilang karena unduhan kedua dibuat sebelum yang pertama sempat mulai).
+ */
+function wait(ms: number) {
+  return new Promise<void>((r) => setTimeout(r, ms))
+}
+
+/** Nama dasar tanpa ekstensi .pdf (aman, tanpa ekstensi ganda). */
 function baseName(name: string): string {
   return sanitizeFileName(name).replace(/\.pdf$/i, '') || 'dokumen'
 }
@@ -104,7 +114,7 @@ export default function PdfToolsPanel() {
     try {
       const list: PageEdit[] = loaded.pages.map((p) => edits[p.index] ?? {})
       const out = await applyEditsBytes(loaded.bytes, list)
-      downloadBytes(out, `${sanitizeOutputName(baseName(loaded.name))}.pdf`)
+      downloadBytes(out, sanitizeOutputName(baseName(loaded.name)))
       setNotice(`Halaman disimpan: ${keptCount} dari ${loaded.pages.length}.`)
       // Muat ulang dari hasil agar indeks halaman konsisten.
       await loadBytes(loaded.name, out)
@@ -128,7 +138,11 @@ export default function PdfToolsPanel() {
         return
       }
       const base = baseName(loaded.name)
-      parts.forEach((p, i) => downloadBytes(p, `${sanitizeOutputName(`${base}-bagian-${i + 1}`)}.pdf`))
+      // Beri jeda antar unduhan agar browser tidak membatalkan yang berikutnya.
+      for (let i = 0; i < parts.length; i++) {
+        downloadBytes(parts[i], sanitizeOutputName(`${base}-bagian-${i + 1}`))
+        await wait(700)
+      }
       setNotice(`Pecah menjadi ${parts.length} file.`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memecah PDF.')
@@ -144,12 +158,12 @@ export default function PdfToolsPanel() {
     setNotice(null)
     try {
       const r = await compressPdfBytes(loaded.bytes)
-      downloadBytes(r.bytes, `${sanitizeOutputName(baseName(loaded.name))}-kompres.pdf`)
+      downloadBytes(r.bytes, sanitizeOutputName(`${baseName(loaded.name)}-kompres`))
       const before = (r.originalBytes / 1024).toFixed(0)
       const after = (r.compressedBytes / 1024).toFixed(0)
       setNotice(
         r.savedRatio > 0
-          ? `Kompresi: ${before} KB → ${after} KB (hemat ${Math.round(r.savedRatio * 100)}%).`
+          ? `Kompresi: ${before} KB → ${after} KB (hemat ${Math.round(r.savedRatio * 100)}%). Kualitas & teks utuh.`
           : `Tidak ada penghematan berarti (${before} KB). File asli dipertahankan.`,
       )
     } catch (err) {
