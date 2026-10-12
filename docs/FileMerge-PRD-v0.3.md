@@ -579,14 +579,14 @@ Catatan jujur untuk Privacy Policy: dokumen di cloud **tidak dienkripsi end-to-e
 
 | Fase | Isi | Output / pintu keluar |
 |---|---|---|
-| **0 — Validasi platform** | Verifikasi query DB end-to-end; putuskan storage (Prisma bucket); **spike auth vs Prisma 8 RC**; cek kuota free tier; **tanpa dokumen asli** | Tabel kuota terverifikasi; keputusan auth/storage; PRD v1.0 |
-| **1 — MVP merger publik** | Landing, merge PDF + gambar (@cantoo/pdf-lib), urutan naik/turun, unduh, error handling, responsif, a11y | **✅ AC-01–07 lulus (lihat docs/Fase1-Report.md) → siap rilis** |
-| **2 — Akun & storage** | ⛔ **DITAHAN** — menunggu keputusan DB schema, auth, storage | AC-08 |
-| **3 — Integrasi dokumen tersimpan** | ⛔ DITAHAN | AC-09, AC-10 |
-| **4 — Keamanan & stabilisasi** | ⛔ DITAHAN | AC-11–16 |
-| **5 — Lanjutan** | Preset, riwayat, split, rotasi/hapus halaman, kompresi, DnD library | Backlog |
+| **0 — Validasi platform** | Verifikasi query DB end-to-end; putuskan storage; spike auth vs Prisma 8 RC; cek kuota free tier | **✅ Selesai** — Prisma Postgres + Vercel Blob private + auth self-managed |
+| **1 — MVP merger publik** | Landing, merge PDF + gambar (@cantoo/pdf-lib), urutan naik/turun, unduh, error handling, responsif, a11y | **✅ AC-01–07 lulus (docs/Fase1-Report.md) — LIVE** |
+| **2 — Akun & storage** | Registrasi/login, dashboard, upload, kategori, pencarian, private storage, kontrol akses | **✅ Selesai (docs/Fase2-4-Report.md)** — AC-08 lulus |
+| **3 — Integrasi dokumen tersimpan** | Pilih dokumen cloud untuk merge | **✅ Selesai** — AC-09, AC-10 lulus |
+| **4 — Keamanan & stabilisasi** | Tes otorisasi, kegagalan, PDF rusak, scan secret, lintas perangkat | **✅ Selesai** — AC-11–16 lulus (kecuali Safari/iOS belum diuji) |
+| **5 — Lanjutan** | Preset, riwayat, split, rotasi/hapus halaman, kompresi, DnD library | ⏳ Belum dikerjakan (opsional, belum ada requirement rinci) |
 
-**Prinsip:** Fase 1 tidak bergantung pada Fase 0 maupun keputusan auth/storage. **Fase 2+ tidak dimulai** sebelum keputusan database, autentikasi, dan storage ditetapkan dan PRD dinaikkan ke v1.0.
+**Status:** Fase 0–4 selesai & LIVE di https://filemerge-seven.vercel.app. Fase 5 opsional.
 
 Dokumen repo yang direncanakan: `README.md`, `LICENSE` (MIT), `CONTRIBUTING.md`, `SECURITY.md`, `.env.example`, panduan instalasi lokal, panduan deployment, dokumentasi arsitektur, Privacy Policy.
 
