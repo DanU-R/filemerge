@@ -15,7 +15,7 @@ export interface TabItem {
  * tab aktif = pil putih dengan teks aksen + bayangan tipis.
  *
  * Semua panel tetap ter-mount di DOM (hanya yang tidak aktif diberi `hidden`)
- * supaya keadaan di dalamnya — input file, hasil merge, dan lain-lain — tidak
+ * supaya keadaan di dalamnya (input file, hasil merge, dan lain-lain) tidak
  * hilang saat pengguna berpindah tab.
  */
 export default function Tabs({

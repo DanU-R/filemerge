@@ -16,7 +16,7 @@ FAMILIES = {
     'Fredoka': 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap',
     'Nunito':  'https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap',
 }
-# hanya subset latin (dan latin-ext kalau ada) — cukup untuk Bahasa Indonesia
+# hanya subset latin (dan latin-ext kalau ada), cukup untuk Bahasa Indonesia
 KEEP = {'latin', 'latin-ext'}
 
 
@@ -64,7 +64,7 @@ for name, css_url in FAMILIES.items():
 # tulis CSS lokal
 lines = [
     '/* Font di-host sendiri (CSP tidak mengizinkan CDN font eksternal).',
-    ' * Dihasilkan oleh scripts/fetch-fonts.py — jangan diedit manual.',
+    ' * Dihasilkan oleh scripts/fetch-fonts.py, jangan diedit manual.',
     ' * Sumber: Google Fonts (Fredoka 500/600, Nunito 400/700), subset latin. */',
     '',
 ]

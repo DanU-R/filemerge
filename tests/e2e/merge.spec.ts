@@ -76,7 +76,7 @@ async function mergedBytes(page: Page): Promise<Uint8Array> {
   return new Uint8Array(Buffer.from(b64, 'base64'))
 }
 
-test.describe('FileMerge MVP — Fase 1', () => {
+test.describe('FileMerge MVP: Fase 1', () => {
   test('AC-01/AC-03/AC-04: merge PDFs, urutan benar, unduh nama kustom', async ({ page }) => {
     await page.goto('/merge')
     const a = await pdfWithPages([[200, 200], [200, 200]])

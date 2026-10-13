@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/server/auth'
 import { getDb } from '@/prisma/db'
 
 export const metadata: Metadata = {
-  title: 'PDF Merger — FileMerge',
+  title: 'PDF Merger: FileMerge',
   description: 'Gabungkan PDF dan gambar di browser tanpa login.',
 }
 
@@ -56,8 +56,8 @@ export default async function MergePage({
         <p className="page__eyebrow">FileMerge</p>
         <h1>Gabungkan PDF & gambar</h1>
         <p>
-          Susun berkas, atur ukuran halaman, lalu unduh satu PDF. Semua diproses di browser kamu —
-          tidak ada berkas yang dikirim ke server.
+          Susun berkas, atur ukuran halaman, lalu unduh satu PDF. Semua diproses di browser kamu.
+          Tidak ada berkas yang dikirim ke server.
         </p>
       </header>
       <MergeTool

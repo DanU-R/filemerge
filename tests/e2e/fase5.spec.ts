@@ -63,7 +63,7 @@ async function mergedBytes(page: Page): Promise<Uint8Array> {
   return new Uint8Array(Buffer.from(b64, 'base64'))
 }
 
-test.describe('Fase 5 — pengaturan halaman, drag-drop, preset', () => {
+test.describe('Fase 5: pengaturan halaman, drag-drop, preset', () => {
   test('pengaturan halaman: Letter landscape diterapkan ke gambar', async ({ page }) => {
     await page.goto(BASE + '/merge')
     await page.setInputFiles('[data-testid="file-input"]', {
@@ -151,7 +151,7 @@ test.describe('Fase 5 — pengaturan halaman, drag-drop, preset', () => {
     expect(mediaBoxes(await mergedBytes(page)).length).toBe(3)
   })
 
-  test('preset: isolasi — pengguna lain tidak melihat preset', async ({ browser }) => {
+  test('preset: isolasi, pengguna lain tidak melihat preset', async ({ browser }) => {
     const a = await (await browser.newContext()).newPage()
     await register(a, uniqueEmail('pr-a'))
     await uploadDoc(a, 'Doc A', 1)

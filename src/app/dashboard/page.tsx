@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/server/auth'
 import { getDb } from '@/prisma/db'
 import { DOC_LIMITS } from '@/lib/server/docLimits'
 
-export const metadata: Metadata = { title: 'Dashboard — FileMerge' }
+export const metadata: Metadata = { title: 'Dashboard: FileMerge' }
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {

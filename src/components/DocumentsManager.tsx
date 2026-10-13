@@ -233,7 +233,7 @@ export default function DocumentsManager({
       )}
       {retrying && (
         <p className="muted small" role="status" data-testid="retrying">
-          Koneksi bermasalah — mencoba lagi…
+          Koneksi bermasalah, mencoba lagi…
         </p>
       )}
       {notice && (

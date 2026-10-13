@@ -150,7 +150,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
   const mimeType =
     kind === 'pdf' ? 'application/pdf' : kind === 'png' ? 'image/png' : 'image/jpeg'
 
-  // 1) unggah file baru (key baru) — bila ini gagal, file lama tak tersentuh.
+  // 1) unggah file baru (key baru). Bila ini gagal, file lama tak tersentuh.
   await putObject(user.id, newKey, buf, mimeType)
 
   const oldKey = doc.storageKey

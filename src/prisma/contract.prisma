@@ -48,7 +48,7 @@ model Document {
   updatedAt   temporal.updatedAt()
 }
 
-// Fase 5: preset susunan — menyimpan referensi dokumen + urutan, bukan salinan file.
+// Fase 5: preset susunan menyimpan referensi dokumen + urutan, bukan salinan file.
 model MergePreset {
   id        String   @id @default(uuid())
   userId    String

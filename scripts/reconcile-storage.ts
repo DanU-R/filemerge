@@ -2,8 +2,8 @@
  * Rekonsiliasi storage <-> database (PRD §15.4).
  *
  * 1. Menuntaskan dokumen berstatus PENDING_DELETION: hapus objek lalu hapus baris.
- * 2. Melaporkan objek yatim (ada di storage, tidak ada baris DB) dan — dengan
- *    flag --purge — menghapusnya.
+ * 2. Melaporkan objek yatim (ada di storage, tidak ada baris DB) dan, dengan
+ *    flag --purge, menghapusnya.
  *
  * Jalankan pada lingkungan yang punya DATABASE_URL + BLOB_READ_WRITE_TOKEN:
  *   bun run storage:reconcile

@@ -53,7 +53,7 @@ async function uploadDoc(page: Page, name: string, pages = 1, category = 'CV') {
   })
 }
 
-test.describe('Fase 2/3/4 — akun & dokumen', () => {
+test.describe('Fase 2/3/4: akun & dokumen', () => {
   test('AC-08: registrasi, upload, dan lihat kembali dokumen', async ({ page }) => {
     const email = uniqueEmail('ac08')
     await register(page, email)

@@ -304,7 +304,7 @@ export default function MergeTool({
 
       {overWarn && (
         <p className="alert alert--warn" role="status">
-          Total antrean {formatBytes(totalBytes)} cukup besar — proses bisa lambat di perangkat
+          Total antrean {formatBytes(totalBytes)} cukup besar. Proses bisa lambat di perangkat
           berkapasitas rendah.
         </p>
       )}
@@ -312,7 +312,7 @@ export default function MergeTool({
       {progress && (
         <p className="progress" role="status" data-testid="progress">
           Memproses {Math.min(progress.done + 1, progress.total)}/{progress.total}
-          {progress.name ? ` — ${progress.name}` : ''}
+          {progress.name ? ` · ${progress.name}` : ''}
         </p>
       )}
 
@@ -329,7 +329,7 @@ export default function MergeTool({
       {result && (
         <div className="result" data-testid="result" data-result-id={result.id}>
           <p>
-            Selesai — {result.pages} halaman, {formatBytes(result.size)}.
+            Selesai. {result.pages} halaman, {formatBytes(result.size)}.
           </p>
           <a
             className="btn btn--primary"

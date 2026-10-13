@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Kebijakan Privasi — FileMerge' }
+export const metadata: Metadata = { title: 'Kebijakan Privasi: FileMerge' }
 
 export default function PrivacyPage() {
   return (
     <main className="page">
       <header className="page__head">
         <h1>Kebijakan Privasi</h1>
-        <p>Ditulis apa adanya — tanpa klaim berlebihan.</p>
+        <p>Ditulis apa adanya, tanpa klaim berlebihan.</p>
       </header>
       <section className="prose">
         <h2>Penggabungan berjalan di perangkat Anda</h2>
@@ -30,12 +30,12 @@ export default function PrivacyPage() {
           </li>
         </ul>
 
-        <h2>Enkripsi — jujur apa adanya</h2>
+        <h2>Enkripsi: jujur apa adanya</h2>
         <p>
           Dokumen <strong>tidak dienkripsi end-to-end</strong>. Provider penyimpanan mengenkripsi
           data saat tersimpan (at-rest) sesuai kebijakan mereka, tetapi operator layanan secara
           teknis <strong>dapat</strong> mengakses file. Jika butuh kerahasiaan mutlak, jangan
-          unggah dokumen tersebut — gunakan fitur merge tanpa akun.
+          unggah dokumen tersebut. Gunakan fitur merge tanpa akun.
         </p>
 
         <h2>Kontrol data Anda</h2>

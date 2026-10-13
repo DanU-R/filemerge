@@ -6,7 +6,7 @@
  * Hanya mencoba ulang pada kegagalan yang masuk akal untuk diulang:
  * - error jaringan (fetch melempar)
  * - HTTP 408/429/5xx
- * Kegagalan sisi-klien (4xx lain: 400/401/403/404/409/413/415) TIDAK diulang —
+ * Kegagalan sisi-klien (4xx lain: 400/401/403/404/409/413/415) TIDAK diulang:
  * mengulangnya hanya membuang waktu dan kuota.
  *
  * Balasan 429 menghormati header `Retry-After` bila ada.
@@ -82,7 +82,7 @@ export async function fetchWithRetry(
       if (!isRetryable(res.status) || attempt === attempts) return res
 
       // Hitung jeda; hormati Retry-After untuk 429. Bila antreannya lebih lama
-      // dari batas, jangan menunggu — kembalikan pesan sekarang agar UI responsif.
+      // dari batas, jangan menunggu: kembalikan pesan sekarang agar UI responsif.
       let delay = Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs)
       if (res.status === 429) {
         const ra = Number(res.headers.get('retry-after'))

@@ -6,7 +6,7 @@ export type Orientation = 'portrait' | 'landscape'
 export interface PageSettings {
   pageSize: PageSizeKey
   orientation: Orientation
-  /** Margin dalam pt (0–72). Diabaikan bila pageSize = 'fit'. */
+  /** Margin dalam pt (0-72). Diabaikan bila pageSize = 'fit'. */
   margin: number
 }
 

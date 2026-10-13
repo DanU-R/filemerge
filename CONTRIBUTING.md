@@ -17,7 +17,7 @@ bun run dev
 ```
 Fitur tanpa akun (merge) berjalan tanpa `.env`.
 
-## Sebelum mengirim PR — semua gate harus hijau
+## Sebelum mengirim PR: semua gate harus hijau
 ```bash
 bun run typecheck    # tsc --noEmit
 bun run lint         # eslint

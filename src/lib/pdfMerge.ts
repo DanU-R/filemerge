@@ -83,7 +83,7 @@ async function appendImage(
 
 /**
  * Gabungkan sumber sesuai urutan antrean. File bermasalah dicatat di `failures`
- * dan dilewati — aplikasi tidak crash. `decodeImage` di-inject agar dapat diuji
+ * dan dilewati. Aplikasi tidak crash. `decodeImage` di-inject agar dapat diuji
  * tanpa DOM.
  */
 export async function mergeDocuments(

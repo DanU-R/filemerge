@@ -1,4 +1,4 @@
-# FileMerge — Laporan Fase 0, 2, 3, 4
+# FileMerge: Laporan Fase 0, 2, 3, 4
 
 | Item | Nilai |
 |---|---|
@@ -10,7 +10,7 @@ Semua angka di bawah berasal dari eksekusi nyata.
 
 ---
 
-## Fase 0 — Validasi platform (selesai)
+## Fase 0: Validasi platform (selesai)
 
 | Keputusan | Hasil | Dasar |
 |---|---|---|
@@ -27,31 +27,31 @@ Fakta yang memengaruhi desain (terverifikasi):
 
 ---
 
-## Fase 2 — Akun & penyimpanan (selesai)
+## Fase 2: Akun & penyimpanan (selesai)
 
-**Skema (Prisma 8 contract-first)** — `src/prisma/contract.prisma`:
+**Skema (Prisma 8 contract-first)**, `src/prisma/contract.prisma`:
 - `User(id uuid, email unique, passwordHash)`
 - `Session(id uuid, userId → User cascade, expiresAt)`
 - `Document(id uuid, userId → User cascade, displayName, category enum, mimeType, sizeBytes, storageKey unique, status enum)`
 - Enum `DocCategory` (CV/IDENTITAS/PENDIDIKAN/SERTIFIKAT/LAINNYA), `DocStatus`.
 
-Migrasi di-reset ke init bersih (DB masih kosong, pre-launch) — menghindari backfill
+Migrasi di-reset ke init bersih (DB masih kosong, pre-launch), menghindari backfill
 tidak perlu dari schema demo lama.
 
 **Implementasi:**
-- `POST /api/auth/register`, `/login`, `/logout`, `GET /me` — validasi Zod, hash bcrypt (cost 10), pesan login seragam (tidak membocorkan email terdaftar).
+- `POST /api/auth/register`, `/login`, `/logout`, `GET /me`, validasi Zod, hash bcrypt (cost 10), pesan login seragam (tidak membocorkan email terdaftar).
 - `GET/POST /api/documents`, `GET/PATCH/DELETE /api/documents/[id]`.
 - Upload: validasi magic bytes, batas 20 MB/file, kuota 30 dokumen & 100 MB/akun, `storageKey` UUID dibuat server, nama disanitasi.
 - Penyimpanan: abstraksi `src/lib/server/storage.ts` (Vercel Blob private).
 - UI: `/register`, `/login`, `/dashboard` (unggah, daftar, cari, filter, ganti nama, unduh, hapus, kuota).
 - Nav layout menyesuaikan status login.
 
-## Fase 3 — Integrasi dokumen tersimpan (selesai)
+## Fase 3: Integrasi dokumen tersimpan (selesai)
 
 - `/merge` menampilkan panel "Pilih dari dokumen saya" (dokumen READY milik pengguna).
 - Klik → dokumen diunduh ke browser via endpoint terotorisasi → masuk antrean → diproses **lokal** (tetap nol upload isi file ke server saat merge).
 
-## Fase 4 — Keamanan & stabilisasi (selesai)
+## Fase 4: Keamanan & stabilisasi (selesai)
 
 - **Isolasi data:** setiap query dokumen terikat `userId`; dokumen milik pengguna lain → **404** (bukan 403) agar keberadaan tidak bocor.
 - **Guard:** `/dashboard` tanpa sesi → redirect `/login` (307); API tanpa sesi → **401**.

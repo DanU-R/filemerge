@@ -1,6 +1,6 @@
 # Deploy FileMerge ke Vercel (Frontend) + Prisma Postgres (Database)
 
-> **STATUS: SUDAH LIVE** — https://filemerge-seven.vercel.app
+> **STATUS: SUDAH LIVE**: https://filemerge-seven.vercel.app
 > Project Vercel: `danu-rangganas-projects/filemerge` · repo GitHub ter-connect
 > (auto-deploy tiap push ke `main`). Uji live lulus: landing, `/merge` (merge 2 PDF
 > -> 3 halaman, urutan benar, **0 request ke server**), `/privacy`, 404.
@@ -19,19 +19,19 @@ agar dua jalur (Vercel dan Prisma Compute) tidak saling mengganggu.
 
 ## Perubahan yang sudah dilakukan di repo
 
-1. **`next.config.ts`** — `output: "standalone"` hanya aktif di luar Vercel:
+1. **`next.config.ts`**: `output: "standalone"` hanya aktif di luar Vercel:
    ```ts
    const isVercel = !!process.env.VERCEL
    const nextConfig = { ...(isVercel ? {} : { output: "standalone" as const }), ... }
    ```
    Alasan: `standalone` adalah syarat Prisma Compute, tetapi di Vercel dapat memicu
    kegagalan build (Vercel punya pipeline sendiri).
-2. **`.github/workflows/prisma-deploy.yml`** — dinonaktifkan secara default lewat
+2. **`.github/workflows/prisma-deploy.yml`**, dinonaktifkan secara default lewat
    guard `vars.PRISMA_DEPLOY_ENABLED == 'true'`. Jadi push ke GitHub **tidak**
    memunculkan check deploy yang gagal. Aktifkan kembali hanya jika mau memakai
    Prisma Compute.
 
-## Langkah deploy (di sisi Anda — butuh akun Vercel)
+## Langkah deploy (di sisi Anda: butuh akun Vercel)
 
 1. **Import repo di Vercel**
    - Vercel Dashboard -> Add New -> Project -> import `DanU-R/filemerge`.
@@ -46,15 +46,15 @@ agar dua jalur (Vercel dan Prisma Compute) tidak saling mengganggu.
    ```
    DATABASE_URL = <connection string pooled Prisma Postgres>
    ```
-   Gunakan string **pooled** (`pooled.db.prisma.io`) — Prisma Postgres sudah punya
+   Gunakan string **pooled** (`pooled.db.prisma.io`), Prisma Postgres sudah punya
    connection pooling bawaan untuk beban serverless Vercel.
    Tambahkan untuk **Production, Preview, dan Development**.
    **Jangan** commit nilai ini ke repo.
 
-   > Alternatif: pakai integrasi Vercel Marketplace "Prisma Postgres" — akan
+   > Alternatif: pakai integrasi Vercel Marketplace "Prisma Postgres", akan
    > mengisi `DATABASE_URL` otomatis.
 
-3. **Deploy** — klik Deploy. Build akan menjalankan `contract:emit` lalu `next build`.
+3. **Deploy**: klik Deploy. Build akan menjalankan `contract:emit` lalu `next build`.
 
 ## Setelah deploy
 
@@ -67,7 +67,7 @@ agar dua jalur (Vercel dan Prisma Compute) tidak saling mengganggu.
 
 - **Fase 1 tidak memakai database.** Aplikasi akan jalan penuh di Vercel meski
   `DATABASE_URL` belum diisi. DB baru relevan untuk Fase 2+ (akun & dokumen).
-- **Jangan** menyalakan kembali `output: "standalone"` secara global — itu akan
+- **Jangan** menyalakan kembali `output: "standalone"` secara global, itu akan
   mengembalikan risiko kegagalan build di Vercel.
 - Deploy dari GitHub: push ke `main` (atau PR) otomatis membuat deployment Vercel.
 - Deploy manual: `vercel --prod` (butuh `vercel login` atau `VERCEL_TOKEN`).

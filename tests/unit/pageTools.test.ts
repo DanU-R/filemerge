@@ -50,7 +50,7 @@ describe('resolvePageOrder', () => {
   })
 })
 
-describe('applyPageEdits — susun ulang', () => {
+describe('applyPageEdits: susun ulang', () => {
   it('membalik urutan 2 halaman', async () => {
     // Halaman berukuran berbeda supaya urutannya bisa diperiksa.
     const d = await PDFDocument.create()

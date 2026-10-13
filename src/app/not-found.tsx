@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <main className="page">
       <header className="page__head">
-        <h1>404 — Halaman tidak ditemukan</h1>
+        <h1>404: Halaman tidak ditemukan</h1>
         <p>Alamat yang kamu buka tidak tersedia.</p>
       </header>
       <p>

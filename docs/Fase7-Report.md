@@ -1,4 +1,4 @@
-# Fase 7 — Desain Percikan & Organisasi Tab `/merge`
+# Fase 7: Desain Percikan & Organisasi Tab `/merge`
 
 Status: **selesai** · Tanggal: 13 Oktober 2026
 
@@ -13,7 +13,7 @@ Di kanvas desain (Superdesign) panjangnya terasa melelahkan. Dua perubahan diker
 
 ## 1. Arah visual Percikan masuk kode
 
-Sebelumnya `globals.css` memakai biru `#1f5eff` di abu terang dengan font sistem — bertentangan
+Sebelumnya `globals.css` memakai biru `#1f5eff` di abu terang dengan font sistem, bertentangan
 dengan `design-system.md`. Sekarang token Percikan menjadi sumber kebenaran:
 
 | Token | Nilai | Peran |
@@ -46,11 +46,11 @@ Fredoka dipakai **hanya** untuk judul (h1–h3 dan kelas judul di panel); isi me
 
 ## 2. Tiga tab di `/merge`
 
-`src/components/Tabs.tsx` — komponen tab tanpa dependensi baru:
+`src/components/Tabs.tsx`: komponen tab tanpa dependensi baru:
 
-- **Gabungkan** — dropzone, antrean berkas, pengaturan kertas, nama hasil, Bersihkan/Gabungkan.
-- **Atur halaman** — `PdfToolsPanel` (pratinjau, susun ulang, rotasi, hapus, pecah, kompres).
-- **Dokumen & preset** — dokumen akun + `PresetPanel`; hanya dirender bila `isAuthed` atau ada
+- **Gabungkan**: dropzone, antrean berkas, pengaturan kertas, nama hasil, Bersihkan/Gabungkan.
+- **Atur halaman**: `PdfToolsPanel` (pratinjau, susun ulang, rotasi, hapus, pecah, kompres).
+- **Dokumen & preset**: dokumen akun + `PresetPanel`; hanya dirender bila `isAuthed` atau ada
   dokumen tersimpan.
 
 Keputusan penting:
@@ -76,15 +76,15 @@ setelah membandingkan empat alternatif (garis bawah, tab map, segmented, langkah
 |---|---|---|
 | Tinggi halaman (tab terpanjang) | ±2.500 px | ±1.200 px |
 | Panel tampil sekaligus | semua | 1 |
-| Kontrol hilang | — | **0** |
+| Kontrol hilang |: | **0** |
 
 ## 4. Verifikasi
 
-- `bunx tsc --noEmit` — bersih
-- `bunx vitest run` — **76/76**
-- `bunx eslint .` — bersih
-- `bun run build` — sukses
-- `bunx playwright test` — **122/122** (Chromium + Firefox)
+- `bunx tsc --noEmit`: bersih
+- `bunx vitest run`: **76/76**
+- `bunx eslint .`: bersih
+- `bun run build`: sukses
+- `bunx playwright test`: **122/122** (Chromium + Firefox)
 - `tests/e2e/tabs.spec.ts` (baru, 10 tes) menutup: tab default, tab dokumen absen tanpa sesi,
   perpindahan panel + petunjuk, `?tab=` valid/tidak valid, kontrol tetap ter-mount, keadaan
   antrean bertahan antar tab, navigasi papan ketik, semantik ARIA, dan satu-panel-tampil.
@@ -109,7 +109,7 @@ lewat URL: `pdftools.spec.ts` → `?tab=halaman`; `account.spec.ts` (AC-10) dan 
 kini mengklik tab yang sesuai sebelum menyentuh kontrol di tab lain.
 
 Catatan proses: dua kali sebuah run harus diulang karena suite dijalankan **sebelum** perbaikan
-tes ditulis — hasil "gagal" itu artefak dari tes versi lama, bukan bug aplikasi. Alur preset
+tes ditulis: hasil "gagal" itu artefak dari tes versi lama, bukan bug aplikasi. Alur preset
 diverifikasi ulang di browser sungguhan (antrean kembali terisi 2 berkas, tanpa galat) untuk
 memastikan hal ini.
 
@@ -118,15 +118,15 @@ memastikan hal ini.
 - Kanvas Superdesign tetap dipakai sebagai sumber arah desain; versi kode ini adalah
   penerjemahan manual dari draf terpilih (tanpa memakai kredit generator).
 - Halaman lain (`/`, `/dashboard`, `/login`, `/register`, `/settings`, `/privacy`) belum
-  ditata ulang ke Percikan — token global sudah berubah, jadi mereka mengikuti palet & font
+  ditata ulang ke Percikan: token global sudah berubah, jadi mereka mengikuti palet & font
   baru, tetapi komposisinya belum didesain ulang.
 
 ---
 
-## 5. Fase 7b — rombak LAYOUT (bukan hanya warna)
+## 5. Fase 7b: rombak LAYOUT (bukan hanya warna)
 
 Pekerjaan Fase 7 di atas awalnya hanya mengganti **_token_** (warna, font, radius) dan
-memecah halaman jadi tab. **Layout/komposisinya tidak disentuh** — panel masih ditumpuk
+memecah halaman jadi tab. **Layout/komposisinya tidak disentuh**, panel masih ditumpuk
 `gap: 16px` tanpa pengelompokan, judul header 32px, dan dropzone berupa kotak putus-putus
 polos. Hasilnya terasa "diganti cat, bukan ditata". Bagian ini memperbaikinya.
 
@@ -138,7 +138,7 @@ polos. Hasilnya terasa "diganti cat, bukan ditata". Bagian ini memperbaikinya.
 | Judul kartu | tidak ada | `Berkas` · `Pengaturan kertas` · `Susun & gabungkan` |
 | Header halaman | `h1` 32px, tanpa label | eyebrow + `h1` clamp(1.9rem→2.6rem) ≈ **41.6px** |
 | Dropzone | kotak polos, tanpa ikon, hint tercampur | ilustrasi dokumen SVG 46px, tombol `btn--primary`, batas info dipindah ke kepala kartu |
-| Kotak pengaturan | kartu bersarang (border di dalam kartu) | menyatu di kartu — `background:none; border:none` |
+| Kotak pengaturan | kartu bersarang (border di dalam kartu) | menyatu di kartu, `background:none; border:none` |
 | Area aksi | flex-wrap | **grid** `1fr auto auto`, tombol 44px, menumpuk penuh di ≤640px |
 | Jarak antar kartu | 16px (seragam, padat) | 18px + padding kartu 20px |
 

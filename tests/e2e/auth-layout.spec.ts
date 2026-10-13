@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 const BASE = 'http://127.0.0.1:3100'
 
-test.describe('Halaman auth — tata letak', () => {
+test.describe('Halaman auth: tata letak', () => {
   for (const [path, heading] of [
     ['/login', /masuk/i],
     ['/register', /buat akun/i],

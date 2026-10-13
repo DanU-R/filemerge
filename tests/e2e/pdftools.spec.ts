@@ -8,7 +8,7 @@ async function pdfBytes(sizes: number[]): Promise<Buffer> {
   for (const w of sizes) d.addPage([w, 200])
   return Buffer.from(await d.save())
 }
-/** Satu halaman per pasangan [lebar, tinggi] — untuk uji yang butuh ukuran eksplisit. */
+/** Satu halaman per pasangan [lebar, tinggi], untuk uji yang butuh ukuran eksplisit. */
 async function pdfSized(pages: [number, number][]): Promise<Buffer> {
   const d = await PDFDocument.create()
   for (const [w, h] of pages) d.addPage([w, h])
@@ -38,7 +38,7 @@ async function downloadedBytes(page: import('@playwright/test').Page): Promise<U
   return new Uint8Array(Buffer.concat(chunks))
 }
 
-test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () => {
+test.describe('Fase 5 lanjutan: alat PDF (rotasi/hapus/split/kompres)', () => {
   test('menampilkan daftar halaman dengan ukuran', async ({ page }) => {
     await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 300, 400]))

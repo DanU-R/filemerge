@@ -1,9 +1,9 @@
-# FileMerge — Laporan Fase 1 (MVP Merger) + Audit
+# FileMerge: Laporan Fase 1 (MVP Merger) + Audit
 
 | Item | Nilai |
 |---|---|
 | Tanggal | 12 Oktober 2026 |
-| Lingkup | Fase 1 — merger PDF & gambar di browser; tanpa login; tanpa upload isi ke server |
+| Lingkup | Fase 1: merger PDF & gambar di browser; tanpa login; tanpa upload isi ke server |
 | Status | Implementasi + audit + perbaikan selesai. Push/deploy belum dilakukan (kredensial tidak tersedia). |
 
 Semua hasil di bawah berasal dari eksekusi nyata pada mesin ini.
@@ -50,7 +50,7 @@ konfigurasi deployment utuh.
 
 ---
 
-## 3. Acceptance Criteria (AC-01 s/d AC-07) — diuji ulang
+## 3. Acceptance Criteria (AC-01 s/d AC-07), diuji ulang
 
 | AC | Deskripsi | Bukti | Status |
 |---|---|---|---|
@@ -75,7 +75,7 @@ konfigurasi deployment utuh.
 
 ---
 
-## 5. Batas file — pengukuran nyata
+## 5. Batas file: pengukuran nyata
 
 Benchmark Chromium headless, PDF dasar sekitar 5.57 MB:
 
@@ -93,21 +93,20 @@ Diuji E2E: file 51 MB ditolak; 51 file -> 50 diterima + pesan "antrean penuh".
 
 ## 6. Kendala & keterbatasan (jujur)
 
-1. **Safari/iOS belum diuji** — tidak tersedia di lingkungan ini (hanya Chromium & Firefox). **Bukan** diklaim lulus. Jalur fallback `createImageBitmap` -> `<img>` tersedia; wajib diuji di perangkat nyata sebelum rilis.
+1. **Safari/iOS belum diuji**: tidak tersedia di lingkungan ini (hanya Chromium & Firefox). **Bukan** diklaim lulus. Jalur fallback `createImageBitmap` -> `<img>` tersedia; wajib diuji di perangkat nyata sebelum rilis.
 2. **PDF teks vektor besar** belum diuji beban (benchmark memakai PDF bergambar; `copyPages` cepat).
 3. **CMYK JPG** kini di-reencode (diverifikasi di level deteksi komponen, bukan render visual per-piksel).
 4. **PNG transparansi** diverifikasi struktural (image XObject hadir), bukan perbandingan visual.
-5. **Warning build**: `next start` menyarankan `node .next/standalone/server.js` (karena `output: "standalone"`) — hanya cara menjalankan lokal; tidak memengaruhi Compute.
-6. **Push/deploy belum dilakukan** — kredensial GitHub (token non-aktif, SSH unauthorized) dan login Prisma CLI tidak tersedia. Lihat §8.
+5. **Warning build**: `next start` menyarankan `node .next/standalone/server.js` (karena `output: "standalone"`), hanya cara menjalankan lokal; tidak memengaruhi Compute.
+6. **Push/deploy belum dilakukan**, kredensial GitHub (token non-aktif, SSH unauthorized) dan login Prisma CLI tidak tersedia. Lihat §8.
 
 ---
 
-## 7. Konfigurasi deployment — TIDAK diubah
+## 7. Konfigurasi deployment: TIDAK diubah
 
 `next.config.ts` (`output:"standalone"`), `module.ts`, `src/service.ts`,
 `prisma-composer.config.ts`, `prisma.config.ts`, `.github/workflows/prisma-deploy.yml`,
-`bunfig.toml` (`linker="hoisted"`), script `build`/`start`/`contract:emit`/`db:*`/`compute:*`
-— **semua utuh** (diverifikasi sebelum & sesudah). Hanya **ditambah** script
+`bunfig.toml` (`linker="hoisted"`), script `build`/`start`/`contract:emit`/`db:*`/`compute:*`, **semua utuh** (diverifikasi sebelum & sesudah). Hanya **ditambah** script
 `test`/`test:watch`/`test:e2e`/`typecheck`/`lint`/`bench:limits`. Tidak ada `.env` dibuat/diubah,
 tidak ada migrasi DB, tidak ada deployment.
 

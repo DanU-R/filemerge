@@ -3,7 +3,7 @@ import 'server-only'
 /**
  * Rate limiter sederhana per-instance (SEC-08). Cukup untuk menahan
  * penyalahgunaan dasar tanpa layanan eksternal. Pada serverless, batas berlaku
- * per instance — bukan pengganti layanan terpusat, tapi lebih baik daripada nol.
+ * per instance, bukan pengganti layanan terpusat, tapi lebih baik daripada nol.
  */
 interface Bucket {
   count: number

@@ -5,7 +5,7 @@ import DeleteAccount from '@/components/DeleteAccount'
 import { getCurrentUser } from '@/lib/server/auth'
 import { accountSummary } from '@/lib/server/account'
 
-export const metadata: Metadata = { title: 'Account Settings — FileMerge' }
+export const metadata: Metadata = { title: 'Pengaturan Akun: FileMerge' }
 export const dynamic = 'force-dynamic'
 
 export default async function SettingsPage() {

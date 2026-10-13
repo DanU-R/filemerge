@@ -14,7 +14,7 @@ const TAB_HALAMAN = '[data-testid="tab-halaman"]'
 const PANEL_GABUNG = '[data-testid="panel-gabungkan"]'
 const PANEL_HALAMAN = '[data-testid="panel-halaman"]'
 
-test.describe('Tab /merge — organisasi bagian', () => {
+test.describe('Tab /merge: organisasi bagian', () => {
   test('default membuka tab "Gabungkan", tab lain tersembunyi', async ({ page }) => {
     await page.goto(BASE + '/merge')
 

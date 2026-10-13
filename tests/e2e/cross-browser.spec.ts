@@ -59,7 +59,7 @@ async function mergedBytes(page: Page): Promise<Uint8Array> {
 }
 
 // Jalankan suite ini di setiap browser yang dikonfigurasi (chromium + firefox).
-test.describe('FileMerge MVP — lintas browser', () => {
+test.describe('FileMerge MVP: lintas browser', () => {
   test('merge PDF + gambar & EXIF orientation tegak', async ({ page }) => {
     await page.goto('/merge')
     await page.setInputFiles('[data-testid="file-input"]', [

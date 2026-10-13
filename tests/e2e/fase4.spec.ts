@@ -35,7 +35,7 @@ async function upload(page: Page, name: string, type = 'pdf', pages = 1) {
   await expect(page.locator('[data-testid="doc-item"]')).toHaveCount(before + 1, { timeout: 30000 })
 }
 
-test.describe('Fase 4 — keamanan, akun, dokumen', () => {
+test.describe('Fase 4: keamanan, akun, dokumen', () => {
   test('header keamanan ada di response', async ({ request }) => {
     const res = await request.get(BASE + '/')
     const h = res.headers()
@@ -50,7 +50,7 @@ test.describe('Fase 4 — keamanan, akun, dokumen', () => {
     await upload(page, 'CV', 'pdf', 1)
     await upload(page, 'Foto', 'png')
 
-    // tipe tampil (urutan desc: Foto dulu, lalu CV) — cek per-item, bukan posisi
+    // tipe tampil (urutan desc: Foto dulu, lalu CV): cek per-item, bukan posisi
     await expect(page.locator('[data-testid="doc-item"]').filter({ hasText: 'PDF' })).toHaveCount(1)
     await expect(page.locator('[data-testid="doc-item"]').filter({ hasText: 'PNG' })).toHaveCount(1)
     await expect(page.locator('[data-testid="doc-date"]').first()).not.toHaveText('')

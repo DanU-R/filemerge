@@ -3,7 +3,7 @@
 /**
  * Render thumbnail halaman PDF di browser (untuk preview visual di editor halaman).
  *
- * Renderer: pdf.js (`pdfjs-dist`). Dipakai **hanya untuk preview** — tidak ada
+ * Renderer: pdf.js (`pdfjs-dist`). Dipakai **hanya untuk preview**, tidak ada
  * dokumen yang dikirim ke server. Kompresi tetap lossless (lihat compressPdf.ts).
  *
  * Worker pdf.js dimuat dari `/pdf.worker.min.mjs` (same-origin) supaya tidak

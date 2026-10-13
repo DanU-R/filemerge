@@ -8,7 +8,7 @@ import {
 } from '@/components/Illustration'
 
 export const metadata = {
-  title: 'FileMerge — Gabungkan PDF & gambar jadi satu berkas',
+  title: 'FileMerge: Gabungkan PDF & gambar jadi satu berkas',
   description:
     'Gabungkan PDF dan gambar menjadi satu berkas dengan isi dokumen tetap di perangkat kamu.',
 }
@@ -65,7 +65,7 @@ export default function Home() {
           <h1>Gabungkan PDF &amp; gambar jadi satu berkas</h1>
           <p className="hero__lead">
             Susun CV, KTP, ijazah, dan sertifikat menjadi satu PDF. Penggabungan berjalan{' '}
-            <strong>di browser kamu</strong> — isi dokumen tidak dikirim ke server.
+            <strong>di browser kamu</strong>. Isi dokumen tidak dikirim ke server.
           </p>
 
           <div className="hero__actions">

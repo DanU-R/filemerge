@@ -1,4 +1,4 @@
-# FileMerge — Laporan Fase 5 (Lanjutan)
+# FileMerge: Laporan Fase 5 (Lanjutan)
 
 | Item | Nilai |
 |---|---|
@@ -13,7 +13,7 @@
 - Orientasi: **tegak / mendatar**.
 - Margin: 0 / 12 / 24 / 36 / 48 pt.
 - Diimplementasi di `src/lib/pageSettings.ts` (`resolvePageSize`) dan dipakai
-  `pdfMerge.appendImage` — berlaku untuk jalur Web Worker **dan** fallback main-thread.
+  `pdfMerge.appendImage`: berlaku untuk jalur Web Worker **dan** fallback main-thread.
 - Kontrol UI: `PageSettingsPanel`, nilai dikirim ke `runMerge({ pageSettings })`.
 
 ### 2. Drag-and-drop urutan antrean
@@ -23,7 +23,7 @@
 
 ### 3. Preset susunan
 - Model `MergePreset` (Prisma 8 contract-first) + migrasi `add_merge_preset`.
-  `items` = JSON `[{ documentId, order }]` — referensi, **bukan** salinan file.
+  `items` = JSON `[{ documentId, order }]`, referensi, **bukan** salinan file.
 - API: `GET/POST /api/presets`, `DELETE /api/presets/[id]`.
 - Validasi: semua dokumen harus milik pengguna (isolasi), maks 20 preset.
 - UI `PresetPanel`: simpan susunan saat ini, terapkan kembali, hapus.

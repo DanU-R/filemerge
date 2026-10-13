@@ -2,7 +2,7 @@ import { PDFDocument, degrees } from '@cantoo/pdf-lib'
 
 /**
  * Operasi per-halaman PDF (Fase 5 lanjutan): inspeksi, rotasi, hapus, split.
- * Semua di browser — isi dokumen tidak pernah dikirim ke server.
+ * Semua di browser. Isi dokumen tidak pernah dikirim ke server.
  */
 
 export interface PageInfo {
@@ -109,7 +109,7 @@ export async function applyPageEdits(
   const rotated = edits.some((e) => e?.rotate)
   const reordered = order.some((v, i) => v !== i)
   if (keep.length === pages.length && !rotated && !reordered) {
-    // Tidak ada perubahan berarti — tetap normalisasi via save.
+    // Tidak ada perubahan berarti. Tetap normalisasi via save.
     return doc.save()
   }
 

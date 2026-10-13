@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { fetchJsonWithRetry } from '@/lib/resilientFetch'
 import { CheckIcon, DocsIllustration } from '@/components/Illustration'
 
-/** Nilai produk di kolom kiri — supaya halaman tidak terasa lapang kosong. */
+/** Nilai produk di kolom kiri, supaya halaman tidak terasa lapang kosong. */
 const BENEFITS = [
   {
     title: 'Simpan sekali, pakai berkali-kali',
@@ -14,7 +14,7 @@ const BENEFITS = [
   },
   {
     title: 'Gabungkan tetap di browser',
-    body: 'Proses merge berjalan di perangkat kamu — isi dokumen tidak dikirim ke server.',
+    body: 'Proses merge berjalan di perangkat kamu. Isi dokumen tidak dikirim ke server.',
   },
   {
     title: 'Preset susunan berkas',

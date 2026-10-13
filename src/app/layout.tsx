@@ -6,7 +6,7 @@ import './globals.css'
 import { getCurrentUser } from '@/lib/server/auth'
 
 export const metadata: Metadata = {
-  title: 'FileMerge — Gabungkan PDF & gambar',
+  title: 'FileMerge: Gabungkan PDF & gambar',
   description:
     'Gabungkan PDF dan gambar menjadi satu berkas, diproses di browser tanpa login.',
 }

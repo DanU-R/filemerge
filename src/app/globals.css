@@ -117,7 +117,7 @@ a {
 }
 
 /* =====================================================================
-   Landing (Fase 7c) — ditata ulang mengikuti arah Percikan.
+   Landing (Fase 7c): ditata ulang mengikuti arah Percikan.
    Menggantikan pola "4 kartu fitur seragam" yang justru dilarang design
    system. Sekarang: hero asimetris + ilustrasi dokumen, langkah bernomor,
    daftar kemampuan (bukan kartu seragam), dan band privasi.
@@ -629,7 +629,7 @@ a {
 /* Lebar fleksibel HANYA di dalam baris horizontal.
    Sebelumnya `flex: 1 1 220px` dipasang di .field dasar; di dalam kontainer
    vertikal (kartu auth, kartu alat PDF) flex-basis itu menjadi TINGGI 220px,
-   sehingga label hanya berisi input ~43px tetapi memakan 220px — muncul celah
+   sehingga label hanya berisi input ~43px tetapi memakan 220px, muncul celah
    besar antar input. Di baris horizontal (upload/filters) perilaku lama tetap. */
 .upload .field,
 .filters .field {
@@ -750,7 +750,7 @@ a {
 }
 
 /* =====================================================================
-   Halaman auth (login & register) — Fase 7d
+   Halaman auth (login & register): Fase 7d
    Sebelumnya kartu 420px mengapung di tengah kolom 860px: ~50% ruang mati
    dan form hanya berisi 2 input tanpa konteks. Sekarang dua kolom:
    panel penjelas (kiri) + kartu form (kanan).
@@ -1205,7 +1205,7 @@ button.icon {
   cursor: default;
 }
 
-/* ---- Tabs (gaya garis bawah) — /merge ---- */
+/* ---- Tabs (gaya garis bawah), /merge ---- */
 
 .tabs {
   display: flex;
@@ -1297,7 +1297,7 @@ button.icon {
 }
 
 /* =====================================================================
-   Fase 7b — Rombak LAYOUT /merge
+   Fase 7b: Rombak LAYOUT /merge
    Sebelumnya panel-panel hanya ditumpuk (`gap 16px`) sehingga halaman
    terasa seperti daftar panjang tanpa pengelompokan, judul header terlalu
    kecil, dan tidak ada kedalaman. Blok ini menyusun ulang komposisinya.
@@ -1351,7 +1351,7 @@ button.icon {
   gap: 14px;
 }
 
-/* Kartu dengan kepala berwarna lembut — hanya dipakai untuk area unggah. */
+/* Kartu dengan kepala berwarna lembut, hanya dipakai untuk area unggah. */
 .card--soft {
   background: var(--soft);
   border-color: #bfe3d3;

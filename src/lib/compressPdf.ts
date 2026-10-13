@@ -16,13 +16,13 @@ export interface CompressResult {
  *
  * Pendekatan: buang metadata (info dict + XMP) dan simpan ulang dengan object
  * streams (`useObjectStreams`). Penghematannya **kecil tapi pasti**, dan kualitas
- * halaman/gambar tidak tersentuh — penting untuk dokumen administratif (KTP,
+ * halaman/gambar tidak tersentuh, penting untuk dokumen administratif (KTP,
  * ijazah) yang harus tetap terbaca dan teksnya tetap bisa dicari.
  *
  * Keputusan desain: kompresi agresif (rasterisasi halaman) sengaja TIDAK dipakai.
  * Cara itu memang memperkecil file jauh lebih banyak, tetapi (a) memerlukan
  * renderer halaman (pdf.js, dependency berat) dan (b) membuat teks tidak lagi
- * dapat dicari serta menurunkan ketajaman — kerugian nyata untuk dokumen
+ * dapat dicari serta menurunkan ketajaman. Kerugian nyata untuk dokumen
  * identitas. Fungsi ini melaporkan `savedRatio` apa adanya; bila tidak ada
  * penghematan, file asli dikembalikan.
  */

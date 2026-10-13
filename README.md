@@ -17,7 +17,7 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 
 ## Fitur
 
-**Antarmuka** — halaman `/merge` dibagi menjadi tiga tab agar tidak menumpuk panjang:
+**Antarmuka**: halaman `/merge` dibagi menjadi tiga tab agar tidak menumpuk panjang:
 **Gabungkan** (antrean berkas + pengaturan kertas), **Atur halaman** (editor PDF),
 **Dokumen & preset** (dokumen akun + preset susunan). Navigasi tab mengikuti pola ARIA
 (`role="tablist"`) dengan dukungan papan ketik ←/→/Home/End. Tab dapat dibuka langsung lewat
@@ -45,9 +45,9 @@ tinta/tangerine, Fredoka untuk judul + Nunito untuk teks, font di-host sendiri k
 - Info ukuran + **tanggal upload** per dokumen.
 - Kuota: 20 MB/file, 30 dokumen, 100 MB total per akun.
 - Pilih dokumen tersimpan untuk digabung (diunduh ke browser, diproses lokal).
-- **Preset susunan** — simpan urutan dokumen (mis. "Lamaran Kerja") dan terapkan kembali.
+- **Preset susunan**: simpan urutan dokumen (mis. "Lamaran Kerja") dan terapkan kembali.
 - Isolasi data antar-akun (dokumen orang lain -> 404).
-- **Account Settings** — ringkasan akun + **hapus akun** beserta semua data (konfirmasi password).
+- **Account Settings**: ringkasan akun + **hapus akun** beserta semua data (konfirmasi password).
 
 > Aplikasi ini dipakai **single-user**. Tidak ada reset password via email. Bila lupa
 > password: `bun run account:password <email> <password-baru>` (mengganti hash dan
@@ -119,17 +119,17 @@ package manager Bun), set env `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN` di Projec
 
 ## Dokumen
 
-- [`docs/FileMerge-PRD-v0.3.md`](docs/FileMerge-PRD-v0.3.md) — PRD + arsitektur
-- [`docs/Fase1-Report.md`](docs/Fase1-Report.md) — laporan & audit Fase 1
-- [`docs/Fase2-4-Report.md`](docs/Fase2-4-Report.md) — laporan Fase 0, 2, 3, 4
-- [`docs/Fase5-Report.md`](docs/Fase5-Report.md) — laporan Fase 5
-- [`docs/Fase4-Report.md`](docs/Fase4-Report.md) — laporan Fase 4 (keamanan)
-- [`docs/Fase6-Report.md`](docs/Fase6-Report.md) — laporan Fase 6 (alat PDF lanjutan)
-- [`docs/Fase7-Report.md`](docs/Fase7-Report.md) — laporan Fase 7 (desain Percikan + tab `/merge`)
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — panduan kontribusi
-- [`SECURITY.md`](SECURITY.md) — kebijakan keamanan
-- [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md) — panduan deploy
+- [`docs/FileMerge-PRD-v0.3.md`](docs/FileMerge-PRD-v0.3.md), PRD + arsitektur
+- [`docs/Fase1-Report.md`](docs/Fase1-Report.md), laporan & audit Fase 1
+- [`docs/Fase2-4-Report.md`](docs/Fase2-4-Report.md), laporan Fase 0, 2, 3, 4
+- [`docs/Fase5-Report.md`](docs/Fase5-Report.md), laporan Fase 5
+- [`docs/Fase4-Report.md`](docs/Fase4-Report.md), laporan Fase 4 (keamanan)
+- [`docs/Fase6-Report.md`](docs/Fase6-Report.md), laporan Fase 6 (alat PDF lanjutan)
+- [`docs/Fase7-Report.md`](docs/Fase7-Report.md), laporan Fase 7 (desain Percikan + tab `/merge`)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md), panduan kontribusi
+- [`SECURITY.md`](SECURITY.md): kebijakan keamanan
+- [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md), panduan deploy
 
 ## Lisensi
 
-MIT — berlaku untuk kode saja, bukan izin mempublikasikan dokumen pengguna.
+MIT: berlaku untuk kode saja, bukan izin mempublikasikan dokumen pengguna.

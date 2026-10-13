@@ -31,7 +31,7 @@ async function uploadDoc(page: Page, name: string, pages = 1) {
   await expect(page.locator('[data-testid="doc-item"]')).toHaveCount(before + 1, { timeout: 30000 })
 }
 
-test.describe('NFR-03 — retry & penanganan kegagalan', () => {
+test.describe('NFR-03: retry & penanganan kegagalan', () => {
   test('upload gagal 500 sekali lalu berhasil (retry otomatis)', async ({ page }) => {
     await register(page, uniqueEmail('rt-up'))
     let n = 0
@@ -77,7 +77,7 @@ test.describe('NFR-03 — retry & penanganan kegagalan', () => {
     await expect(page.locator('[data-testid="auth-form"]')).toHaveCount(0)
   })
 
-  test('kesalahan permanen (413) TIDAK diulang — hanya 1 permintaan', async ({ page }) => {
+  test('kesalahan permanen (413) TIDAK diulang, hanya 1 permintaan', async ({ page }) => {
     await register(page, uniqueEmail('rt-413'))
     let n = 0
     await page.route('**/api/documents', (route) => {

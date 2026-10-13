@@ -8,7 +8,7 @@
 - Selalu pakai HTTPS saat login; cookie sesi `HttpOnly` + `Secure` di produksi.
 
 ## Pemeliharaan storage
-- `bun run storage:reconcile` — menuntaskan dokumen `PENDING_DELETION` dan melaporkan
+- `bun run storage:reconcile`: menuntaskan dokumen `PENDING_DELETION` dan melaporkan
   objek yatim (blob tanpa baris DB). Tambahkan `-- --purge` untuk menghapus objek yatim.
 - Jalankan berkala (mis. bulanan) agar storage dan database tetap konsisten.
 - Kegagalan hapus objek **dicatat di log**, tidak ditelan diam-diam; dokumen tetap

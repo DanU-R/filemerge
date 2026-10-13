@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 const BASE = 'http://127.0.0.1:3100'
 
-test.describe('Landing — arah Percikan', () => {
+test.describe('Landing: arah Percikan', () => {
   test('hero tampil dengan judul, ajakan, dan ilustrasi', async ({ page }) => {
     await page.goto(BASE + '/')
 

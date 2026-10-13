@@ -64,7 +64,7 @@ function thumbStyle(t: Thumbnail, rotate: number): React.CSSProperties {
 
 /**
  * Alat PDF (Fase 5 lanjutan): rotasi/hapus per halaman, pecah (split), kompresi.
- * Semua diproses di browser — isi dokumen tidak dikirim ke server.
+ * Semua diproses di browser. Isi dokumen tidak dikirim ke server.
  */
 export default function PdfToolsPanel() {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
@@ -131,7 +131,7 @@ export default function PdfToolsPanel() {
       if (!file) return
       const bytes = new Uint8Array(await file.arrayBuffer())
       if (!detectKind(bytes.subarray(0, 16))) {
-        setError('File tidak dikenali — hanya PDF atau gambar JPG/PNG yang didukung.')
+        setError('File tidak dikenali. Hanya PDF atau gambar JPG/PNG yang didukung.')
         return
       }
       await loadBytes(file.name, bytes)
@@ -185,7 +185,7 @@ export default function PdfToolsPanel() {
   async function applyEdits() {
     if (!loaded) return
     if (keptCount === 0) {
-      setError('Semua halaman dihapus — sisakan minimal 1 halaman.')
+      setError('Semua halaman dihapus. Sisakan minimal 1 halaman.')
       return
     }
     setBusy(true)
@@ -306,7 +306,7 @@ export default function PdfToolsPanel() {
           )}
           {thumbStatus === 'failed' && (
             <p className="muted small" data-testid="thumbs-status">
-              Pratinjau tidak tersedia — editor tetap bisa dipakai.
+              Pratinjau tidak tersedia. Editor tetap bisa dipakai.
             </p>
           )}
 
