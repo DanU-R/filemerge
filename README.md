@@ -1,7 +1,7 @@
 # FileMerge
 
 Aplikasi web open-source (MIT) untuk **menggabungkan PDF dan gambar menjadi satu PDF**,
-dengan opsi **menyimpan dokumen pribadi** (CV, KTP, KK, ijazah, sertifikat) di akun
+dengan opsi **menyimpan dokumen pribadi** di akun
 pengguna agar bisa dipakai ulang tanpa upload berulang.
 
 **Live:** https://filemerge-seven.vercel.app
