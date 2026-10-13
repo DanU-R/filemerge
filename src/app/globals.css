@@ -739,6 +739,169 @@ a {
   margin: 0;
 }
 
+/* =====================================================================
+   Halaman auth (login & register) — Fase 7d
+   Sebelumnya kartu 420px mengapung di tengah kolom 860px: ~50% ruang mati
+   dan form hanya berisi 2 input tanpa konteks. Sekarang dua kolom:
+   panel penjelas (kiri) + kartu form (kanan).
+   ===================================================================== */
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+  align-items: stretch;
+  margin: 8px 0 0;
+}
+
+/* Panel kiri: nilai produk + ilustrasi */
+.auth-aside {
+  background: var(--soft);
+  border: 1px solid #bfe3d3;
+  border-radius: var(--radius);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.auth-aside__eyebrow {
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.auth-aside__title {
+  font-size: 1.5rem;
+  line-height: 1.22;
+  margin: 0;
+}
+
+.auth-aside__lead {
+  color: #456a5f;
+  margin: 0;
+  max-width: 40ch;
+}
+
+.auth-benefits {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-benefits li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.93rem;
+  color: #35564c;
+}
+
+.auth-benefits svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.auth-benefits strong {
+  color: var(--ink);
+}
+
+.auth-aside__art {
+  margin-top: auto;
+  width: 100%;
+  max-width: 240px;
+  align-self: center;
+  color: var(--ink);
+}
+
+/* Kartu form */
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Kartu ikut tinggi panel kiri (stretch), jadi isinya diletakkan di tengah
+     agar ruang lebihnya terbagi rata dan terlihat disengaja, bukan kosong. */
+  justify-content: center;
+}
+
+.auth-card h1 {
+  font-size: 1.6rem;
+  margin: 0 0 2px;
+}
+
+.auth-card > .muted {
+  margin: 0;
+}
+
+/* Label lebih tegas + bantuan di bawah input */
+.auth-card .field span {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.auth-card .field input {
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.field__help {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* Tombol kirim selebar kartu */
+.auth-card .btn[type='submit'] {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.auth-switch {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* Pemisah tipis sebelum tautan ganti mode */
+.auth-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 2px 0;
+}
+
+@media (max-width: 860px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-aside {
+    padding: 22px;
+  }
+
+  .auth-aside__title {
+    font-size: 1.3rem;
+  }
+
+  .auth-aside__art {
+    display: none;
+  }
+}
+
 .muted {
   color: var(--muted);
 }
