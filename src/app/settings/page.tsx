@@ -18,22 +18,42 @@ export default async function SettingsPage() {
   return (
     <main className="page">
       <header className="page__head">
-        <h1>Account Settings</h1>
-        <p>Kelola akun Anda.</p>
+        <p className="page__eyebrow">Akun</p>
+        <h1>Pengaturan akun</h1>
+        <p>Ringkasan data yang tersimpan, dan pilihan menghapus akun.</p>
       </header>
 
-      <section className="cloud" data-testid="account-summary">
-        <h2 className="cloud__title">Ringkasan</h2>
-        <ul>
-          <li>Email: {summary.email}</li>
-          <li>Dokumen: {summary.documentCount}</li>
-          <li>Preset: {summary.presetCount}</li>
+      <section className="card" data-testid="account-summary">
+        <div className="card__head">
+          <div>
+            <h2 className="card__title">Ringkasan</h2>
+            <p className="card__sub">Data yang tersimpan di akun ini.</p>
+          </div>
+        </div>
+
+        <ul className="summary">
+          <li className="summary__item">
+            <span className="summary__label">Email</span>
+            <span className="summary__value">{summary.email}</span>
+          </li>
+          <li className="summary__item">
+            <span className="summary__label">Dokumen</span>
+            <span className="summary__value">{summary.documentCount}</span>
+          </li>
+          <li className="summary__item">
+            <span className="summary__label">Preset</span>
+            <span className="summary__value">{summary.presetCount}</span>
+          </li>
         </ul>
-        <p>
-          <Link className="btn btn--small" href="/dashboard">
-            Ke My Documents
+
+        <div className="hero__actions">
+          <Link className="btn" href="/dashboard">
+            Buka dokumen saya
           </Link>
-        </p>
+          <Link className="btn" href="/merge">
+            Gabungkan berkas
+          </Link>
+        </div>
       </section>
 
       <DeleteAccount

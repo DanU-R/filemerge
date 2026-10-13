@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import Link from 'next/link'
 import './fonts.css'
 import './globals.css'
+import Logo from '@/components/Logo'
 import { getCurrentUser } from '@/lib/server/auth'
 
 export const metadata: Metadata = {
@@ -27,17 +28,20 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </a>
         <nav className="nav" aria-label="Navigasi utama">
           <Link className="nav__brand" href="/">
+            <Logo />
             FileMerge
           </Link>
           <span className="nav__links">
-            <Link href="/merge">Merge</Link>
+            <Link href="/merge">Gabungkan</Link>
             {user ? (
               <>
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/dashboard">Dokumen</Link>
                 <Link href="/settings">Akun</Link>
               </>
             ) : (
-              <Link href="/login">Masuk</Link>
+              <Link className="nav__cta" href="/login">
+                Masuk
+              </Link>
             )}
             <Link href="/privacy">Privasi</Link>
           </span>

@@ -20,8 +20,8 @@ export default async function DashboardPage() {
 
   return (
     <main className="page">
-      <p className="muted small" data-testid="whoami">
-        Masuk sebagai {user.email}
+      <p className="who" data-testid="whoami">
+        Masuk sebagai <strong>{user.email}</strong>
       </p>
       <DocumentsManager
         initialDocs={docs.map((d) => ({

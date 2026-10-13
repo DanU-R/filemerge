@@ -61,7 +61,12 @@ test.describe('Fase 2/3/4: akun & dokumen', () => {
 
     await uploadDoc(page, 'CV Utama', 1)
     await expect(page.locator('[data-testid="doc-item"]')).toHaveCount(1)
-    await expect(page.locator('[data-testid="quota"]')).toContainText('1/30')
+    // Kuota: 1 dari 30. Assert tahan-spasi + semantik progressbar, jangan
+    // bergantung pada format teks persis ("1/30" vs "1 / 30").
+    const quota = page.locator('[data-testid="quota"]')
+    await expect(quota).toContainText('30')
+    await expect(quota.locator('.quota__bar')).toHaveAttribute('aria-valuenow', '1')
+    await expect(quota.locator('.quota__bar')).toHaveAttribute('aria-valuemax', '30')
 
     // Reload -> dokumen masih ada (persisten di DB).
     await page.reload()

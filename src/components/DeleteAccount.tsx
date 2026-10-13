@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { fetchJsonWithRetry, HttpError } from '@/lib/resilientFetch'
 
 export default function DeleteAccount({
   email,
@@ -27,32 +28,37 @@ export default function DeleteAccount({
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch('/api/account', {
+      // Lewat fetchJsonWithRetry (konvensi repo): penghapusan akun juga
+      // menghapus berkas, jadi kegagalan jaringan sementara diulang otomatis.
+      await fetchJsonWithRetry('/api/account', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setError(data.error || 'Gagal menghapus akun.')
-        return
-      }
       router.push('/')
       router.refresh()
-    } catch {
-      setError('Tidak dapat menghubungi server.')
+    } catch (err) {
+      setError(
+        err instanceof HttpError
+          ? err.message || 'Gagal menghapus akun.'
+          : 'Tidak dapat menghubungi server.',
+      )
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <form className="auth" onSubmit={submit} data-testid="delete-account-form">
-      <h1>Hapus akun</h1>
-      <p className="muted">
-        Akun <strong>{email}</strong> beserta {documentCount} dokumen dan {presetCount} preset akan
-        dihapus permanen. Tindakan ini tidak dapat dibatalkan.
-      </p>
+    <form className="card card--danger" onSubmit={submit} data-testid="delete-account-form">
+      <div className="card__head">
+        <div>
+          <h2 className="card__title">Hapus akun</h2>
+          <p className="card__sub">
+            Akun <strong>{email}</strong> beserta {documentCount} dokumen dan {presetCount} preset
+            akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+          </p>
+        </div>
+      </div>
 
       {error && (
         <p className="alert alert--error" role="alert" data-testid="delete-error">
@@ -60,36 +66,40 @@ export default function DeleteAccount({
         </p>
       )}
 
-      <label className="field">
-        <span>Password</span>
-        <input
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          data-testid="delete-password"
-        />
-      </label>
+      <div className="controls">
+        <label className="field">
+          <span>Password</span>
+          <input
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            data-testid="delete-password"
+          />
+        </label>
 
-      <label className="field">
-        <span>Ketik HAPUS untuk konfirmasi</span>
-        <input
-          type="text"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          placeholder="HAPUS"
-          data-testid="delete-confirm"
-        />
-      </label>
+        <label className="field">
+          <span>Ketik HAPUS untuk konfirmasi</span>
+          <input
+            type="text"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="HAPUS"
+            data-testid="delete-confirm"
+          />
+        </label>
+      </div>
 
-      <button
-        className="btn btn--danger"
-        type="submit"
-        disabled={busy}
-        data-testid="delete-submit"
-      >
-        {busy ? 'Menghapus…' : 'Hapus akun saya'}
-      </button>
+      <div>
+        <button
+          className="btn btn--danger"
+          type="submit"
+          disabled={busy}
+          data-testid="delete-submit"
+        >
+          {busy ? 'Menghapus…' : 'Hapus akun saya'}
+        </button>
+      </div>
     </form>
   )
 }

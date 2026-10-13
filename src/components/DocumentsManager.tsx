@@ -213,18 +213,50 @@ export default function DocumentsManager({
     return matchQ && matchC && matchT
   })
 
+  const usedPct = quota.maxCount > 0 ? Math.round((quota.count / quota.maxCount) * 100) : 0
+
   return (
     <div className="dash">
-      <div className="dash__head">
-        <h1>My Documents</h1>
+      <div className="dash__head welcome">
+        <div>
+          <h1>Dokumen saya</h1>
+          <p className="welcome__sub">
+            Simpan berkas sekali, pakai ulang kapan saja saat menggabungkan.
+          </p>
+        </div>
         <button className="btn" onClick={logout} type="button" data-testid="logout">
           Keluar
         </button>
       </div>
 
-      <p className="muted" data-testid="quota">
-        {quota.count}/{quota.maxCount} dokumen · {fmt(quota.usedBytes)} / {fmt(quota.maxBytes)}
-      </p>
+      <section className="card">
+        <div className="card__head">
+          <div>
+            <h2 className="card__title">Penyimpanan</h2>
+            <p className="card__sub">Batas per akun: {quota.maxCount} dokumen.</p>
+          </div>
+        </div>
+        <div className="quota" data-testid="quota">
+          <p className="quota__line">
+            <span className="quota__num">{quota.count}</span>
+            <span className="quota__of">/ {quota.maxCount} dokumen</span>
+            <span className="quota__of">·</span>
+            <span className="quota__of">
+              {fmt(quota.usedBytes)} dari {fmt(quota.maxBytes)}
+            </span>
+          </p>
+          <div
+            className={`quota__bar${usedPct >= 80 ? ' is-warm' : ''}`}
+            role="progressbar"
+            aria-valuenow={quota.count}
+            aria-valuemin={0}
+            aria-valuemax={quota.maxCount}
+            aria-label="Kuota dokumen terpakai"
+          >
+            <span style={{ width: `${Math.min(100, usedPct)}%` }} />
+          </div>
+        </div>
+      </section>
 
       {error && (
         <p className="alert alert--error" role="alert" data-testid="dash-error">
@@ -242,89 +274,114 @@ export default function DocumentsManager({
         </p>
       )}
 
-      <form className="upload" onSubmit={upload} data-testid="upload-form">
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-          onChange={(e) => {
-            const f = e.target.files?.[0] ?? null
-            setFile(f)
-            if (f && !name) setName(f.name)
-          }}
-          data-testid="doc-file"
-          required
-        />
-        <label className="field">
-          <span>Nama</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} data-testid="doc-name" />
-        </label>
-        <label className="field">
-          <span>Kategori</span>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            data-testid="doc-category"
+      <section className="card">
+        <div className="card__head">
+          <div>
+            <h2 className="card__title">Unggah dokumen</h2>
+            <p className="card__sub">
+              PDF, JPG, atau PNG. Maks {DOC_LIMITS.MAX_FILE_BYTES / 1024 / 1024} MB per berkas.
+            </p>
+          </div>
+        </div>
+
+        <form className="upload" onSubmit={upload} data-testid="upload-form">
+          <div className="upload__pick">
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+              onChange={(e) => {
+                const f = e.target.files?.[0] ?? null
+                setFile(f)
+                if (f && !name) setName(f.name)
+              }}
+              data-testid="doc-file"
+              required
+            />
+          </div>
+          <label className="field">
+            <span>Nama</span>
+            <input value={name} onChange={(e) => setName(e.target.value)} data-testid="doc-name" />
+          </label>
+          <label className="field">
+            <span>Kategori</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              data-testid="doc-category"
+            >
+              {DOC_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {CATEGORY_LABELS[c]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            className="btn btn--primary"
+            disabled={working || !file}
+            type="submit"
+            data-testid="upload"
           >
+            {working ? 'Mengunggah…' : 'Unggah'}
+          </button>
+        </form>
+      </section>
+
+      <section className="card">
+        <div className="card__head">
+          <div>
+            <h2 className="card__title">Daftar dokumen</h2>
+            <p className="card__sub">
+              {docs.length === 0
+                ? 'Belum ada berkas tersimpan.'
+                : `${docs.length} berkas tersimpan.`}
+            </p>
+          </div>
+        </div>
+
+        <div className="filters">
+          <input
+            type="search"
+            placeholder="Cari nama…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            data-testid="search"
+            aria-label="Cari dokumen"
+          />
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            aria-label="Filter kategori"
+            data-testid="filter"
+          >
+            <option value="">Semua kategori</option>
             {DOC_CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {CATEGORY_LABELS[c]}
               </option>
             ))}
           </select>
-        </label>
-        <button
-          className="btn btn--primary"
-          disabled={working || !file}
-          type="submit"
-          data-testid="upload"
-        >
-          {working ? 'Mengunggah…' : 'Unggah'}
-        </button>
-        <span className="muted small">Maks {DOC_LIMITS.MAX_FILE_BYTES / 1024 / 1024} MB/file</span>
-      </form>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            aria-label="Filter tipe"
+            data-testid="filter-type"
+          >
+            <option value="">Semua tipe</option>
+            <option value="application/pdf">PDF</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/png">PNG</option>
+          </select>
+        </div>
 
-      <div className="filters">
-        <input
-          placeholder="Cari nama…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          data-testid="search"
-          aria-label="Cari dokumen"
-        />
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          aria-label="Filter kategori"
-          data-testid="filter"
-        >
-          <option value="">Semua kategori</option>
-          {DOC_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {CATEGORY_LABELS[c]}
-            </option>
-          ))}
-        </select>
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          aria-label="Filter tipe"
-          data-testid="filter-type"
-        >
-          <option value="">Semua tipe</option>
-          <option value="application/pdf">PDF</option>
-          <option value="image/jpeg">JPG</option>
-          <option value="image/png">PNG</option>
-        </select>
-      </div>
-
-      {filtered.length === 0 ? (
-        <p className="empty" data-testid="empty">
-          {docs.length === 0
-            ? 'Belum ada dokumen. Unggah PDF/JPG/PNG pertama kamu.'
-            : 'Tidak ada dokumen yang cocok.'}
-        </p>
-      ) : (
+        {filtered.length === 0 ? (
+          <p className="empty" data-testid="empty">
+            {docs.length === 0
+              ? 'Belum ada dokumen. Unggah PDF/JPG/PNG pertama kamu.'
+              : 'Tidak ada dokumen yang cocok.'}
+          </p>
+        ) : (
         <ul className="doclist" data-testid="doclist">
           {filtered.map((d) => (
             <li key={d.id} className="doclist__item" data-testid="doc-item">
@@ -380,7 +437,8 @@ export default function DocumentsManager({
             </li>
           ))}
         </ul>
-      )}
+        )}
+      </section>
     </div>
   )
 }
