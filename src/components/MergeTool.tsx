@@ -351,126 +351,180 @@ export default function MergeTool({
             hint: 'Tarik PDF atau foto, atur ukurannya, lalu gabungkan.',
             content: (
               <>
-                <section
-                  className={`dropzone${dragging ? ' dropzone--active' : ''}`}
-                  onDragOver={(e) => {
-                    e.preventDefault()
-                    setDragging(true)
-                  }}
-                  onDragLeave={() => setDragging(false)}
-                  onDrop={(e) => {
-                    e.preventDefault()
-                    setDragging(false)
-                    void addFiles(e.dataTransfer.files)
-                  }}
-                >
-                  <p>
-                    <strong>Tarik &amp; lepas</strong> file ke sini, atau
-                  </p>
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => inputRef.current?.click()}
-                  >
-                    Pilih file
-                  </button>
-                  <input
-                    ref={inputRef}
-                    type="file"
-                    multiple
-                    accept={ACCEPT}
-                    className="visually-hidden"
-                    data-testid="file-input"
-                    onChange={(e) => {
-                      if (e.target.files) void addFiles(e.target.files)
-                      e.target.value = ''
+                <section className="card card--soft">
+                  <div className="card__head">
+                    <div>
+                      <h2 className="card__title">Berkas</h2>
+                      <p className="card__sub">
+                        PDF, JPG, atau PNG. Maks {formatBytes(LIMITS.MAX_FILE_BYTES)} per file,{' '}
+                        {LIMITS.MAX_FILES} file, total {formatBytes(LIMITS.MAX_TOTAL_BYTES)}.
+                      </p>
+                    </div>
+                  </div>
+
+                  <section
+                    className={`dropzone${dragging ? ' dropzone--active' : ''}`}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      setDragging(true)
                     }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setDragging(false)
+                      void addFiles(e.dataTransfer.files)
+                    }}
+                  >
+                    <svg
+                      className="dropzone__icon"
+                      viewBox="0 0 48 48"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M13 5h14l9 9v29a3 3 0 0 1-3 3H13a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3Z"
+                        fill="#fff"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M27 5v9h9"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M24 21v12M19.5 28.5 24 33l4.5-4.5"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <p className="dropzone__lead">
+                      <strong>Tarik &amp; lepas</strong> berkas ke sini, atau
+                    </p>
+                    <button
+                      type="button"
+                      className="btn btn--primary"
+                      onClick={() => inputRef.current?.click()}
+                    >
+                      Pilih file
+                    </button>
+                    <input
+                      ref={inputRef}
+                      type="file"
+                      multiple
+                      accept={ACCEPT}
+                      className="visually-hidden"
+                      data-testid="file-input"
+                      onChange={(e) => {
+                        if (e.target.files) void addFiles(e.target.files)
+                        e.target.value = ''
+                      }}
+                    />
+                  </section>
+
+                  <ReorderableList
+                    items={items}
+                    onReorder={reorder}
+                    className="queue"
+                    renderItem={(item, index, handle) => (
+                      <>
+                        {handle}
+                        <span className="queue__index">{index + 1}</span>
+                        <span className="queue__name" title={item.name}>
+                          {item.name}
+                        </span>
+                        <span className={`badge badge--${item.kind}`}>
+                          {item.kind === 'pdf' ? 'PDF' : 'Gambar'}
+                        </span>
+                        <span className="queue__size">{formatBytes(item.size)}</span>
+                        <span className="queue__actions">
+                          <button
+                            type="button"
+                            className="icon"
+                            aria-label={`Naikkan ${item.name}`}
+                            disabled={index === 0}
+                            onClick={() => move(index, -1)}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="icon"
+                            aria-label={`Turunkan ${item.name}`}
+                            disabled={index === items.length - 1}
+                            onClick={() => move(index, 1)}
+                          >
+                            ↓
+                          </button>
+                          <button
+                            type="button"
+                            className="icon icon--danger"
+                            aria-label={`Hapus ${item.name}`}
+                            onClick={() => remove(item.id)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      </>
+                    )}
                   />
-                  <p className="hint">
-                    PDF, JPG, atau PNG. Maks {formatBytes(LIMITS.MAX_FILE_BYTES)} per file,{' '}
-                    {LIMITS.MAX_FILES} file, total {formatBytes(LIMITS.MAX_TOTAL_BYTES)}.
-                  </p>
+
+                  {items.length === 0 && (
+                    <p className="empty" data-testid="empty">
+                      Belum ada berkas. Tambahkan minimal satu PDF atau gambar untuk mulai.
+                    </p>
+                  )}
                 </section>
 
-                <ReorderableList
-                  items={items}
-                  onReorder={reorder}
-                  className="queue"
-                  renderItem={(item, index, handle) => (
-                    <>
-                      {handle}
-                      <span className="queue__index">{index + 1}</span>
-                      <span className="queue__name" title={item.name}>
-                        {item.name}
-                      </span>
-                      <span className={`badge badge--${item.kind}`}>
-                        {item.kind === 'pdf' ? 'PDF' : 'Gambar'}
-                      </span>
-                      <span className="queue__size">{formatBytes(item.size)}</span>
-                      <span className="queue__actions">
-                        <button
-                          type="button"
-                          className="icon"
-                          aria-label={`Naikkan ${item.name}`}
-                          disabled={index === 0}
-                          onClick={() => move(index, -1)}
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          className="icon"
-                          aria-label={`Turunkan ${item.name}`}
-                          disabled={index === items.length - 1}
-                          onClick={() => move(index, 1)}
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
-                          className="icon icon--danger"
-                          aria-label={`Hapus ${item.name}`}
-                          onClick={() => remove(item.id)}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    </>
-                  )}
-                />
+                <section className="card">
+                  <div className="card__head">
+                    <div>
+                      <h2 className="card__title">Pengaturan kertas</h2>
+                      <p className="card__sub">
+                        Berlaku untuk gambar; halaman PDF mengikuti ukuran aslinya.
+                      </p>
+                    </div>
+                  </div>
+                  <PageSettingsPanel value={pageSettings} onChange={setPageSettings} />
+                </section>
 
-                {items.length === 0 && (
-                  <p className="empty" data-testid="empty">
-                    Belum ada file. Tambahkan minimal satu PDF atau gambar untuk mulai.
-                  </p>
-                )}
+                <section className="card">
+                  <div className="card__head">
+                    <div>
+                      <h2 className="card__title">Susun &amp; gabungkan</h2>
+                      <p className="card__sub">Beri nama hasilnya, lalu unduh PDF gabungan.</p>
+                    </div>
+                  </div>
 
-                <PageSettingsPanel value={pageSettings} onChange={setPageSettings} />
-
-                <div className="controls">
-                  <label className="field">
-                    <span>Nama hasil</span>
-                    <input
-                      type="text"
-                      value={outputName}
-                      onChange={(e) => setOutputName(e.target.value)}
-                      aria-label="Nama file hasil"
-                      data-testid="output-name"
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    className="btn btn--primary"
-                    disabled={items.length === 0 || busy}
-                    onClick={() => void merge()}
-                    data-testid="merge"
-                  >
-                    {busy ? 'Menggabungkan…' : 'Gabungkan'}
-                  </button>
-                  <button type="button" className="btn" disabled={busy} onClick={reset}>
-                    Bersihkan
-                  </button>
-                </div>
+                  <div className="controls">
+                    <label className="field">
+                      <span>Nama hasil</span>
+                      <input
+                        type="text"
+                        value={outputName}
+                        onChange={(e) => setOutputName(e.target.value)}
+                        aria-label="Nama file hasil"
+                        data-testid="output-name"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="btn btn--primary"
+                      disabled={items.length === 0 || busy}
+                      onClick={() => void merge()}
+                      data-testid="merge"
+                    >
+                      {busy ? 'Menggabungkan…' : 'Gabungkan'}
+                    </button>
+                    <button type="button" className="btn" disabled={busy} onClick={reset}>
+                      Bersihkan
+                    </button>
+                  </div>
+                </section>
               </>
             ),
           },
@@ -489,8 +543,15 @@ export default function MergeTool({
                   content: (
                     <>
                       {cloudDocs.length > 0 && (
-                        <section className="cloud" data-testid="cloud-docs">
-                          <h2 className="cloud__title">Pilih dari dokumen saya</h2>
+                        <section className="card" data-testid="cloud-docs">
+                          <div className="card__head">
+                            <div>
+                              <h2 className="card__title">Pilih dari dokumen saya</h2>
+                              <p className="card__sub">
+                                Ambil berkas yang sudah tersimpan, tanpa mengunggah ulang.
+                              </p>
+                            </div>
+                          </div>
                           <ul className="cloud__list">
                             {cloudDocs.map((d) => (
                               <li key={d.id}>

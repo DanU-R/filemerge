@@ -38,8 +38,15 @@ export default function PresetPanel({
   const [name, setName] = useState('')
 
   return (
-    <section className="cloud" data-testid="presets">
-      <h2 className="cloud__title">Preset susunan</h2>
+    <section className="card" data-testid="presets">
+      <div className="card__head">
+        <div>
+          <h2 className="card__title">Preset susunan</h2>
+          <p className="card__sub">
+            Simpan urutan berkas (mis. &ldquo;Lamaran Kerja&rdquo;) dan pakai lagi kapan saja.
+          </p>
+        </div>
+      </div>
 
       <div className="preset">
         <input

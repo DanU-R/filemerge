@@ -262,12 +262,16 @@ export default function PdfToolsPanel() {
   }
 
   return (
-    <section className="cloud" data-testid="pdftools">
-      <h2 className="cloud__title">Alat PDF — rotasi, hapus halaman, pecah, kompres</h2>
-      <p className="muted small">
-        Pilih satu PDF. Semua diproses di browser kamu. Jika salah satu file sudah ada di antrean,
-        unggah ulang di sini.
-      </p>
+    <section className="card" data-testid="pdftools">
+      <div className="card__head">
+        <div>
+          <h2 className="card__title">Halaman PDF</h2>
+          <p className="card__sub">
+            Susun ulang, putar, atau hapus halaman; lalu pecah / kompres berkasnya. Semua diproses
+            di browser.
+          </p>
+        </div>
+      </div>
 
       <label className="field">
         <span>File PDF</span>

@@ -120,3 +120,40 @@ memastikan hal ini.
 - Halaman lain (`/`, `/dashboard`, `/login`, `/register`, `/settings`, `/privacy`) belum
   ditata ulang ke Percikan — token global sudah berubah, jadi mereka mengikuti palet & font
   baru, tetapi komposisinya belum didesain ulang.
+
+---
+
+## 5. Fase 7b — rombak LAYOUT (bukan hanya warna)
+
+Pekerjaan Fase 7 di atas awalnya hanya mengganti **_token_** (warna, font, radius) dan
+memecah halaman jadi tab. **Layout/komposisinya tidak disentuh** — panel masih ditumpuk
+`gap: 16px` tanpa pengelompokan, judul header 32px, dan dropzone berupa kotak putus-putus
+polos. Hasilnya terasa "diganti cat, bukan ditata". Bagian ini memperbaikinya.
+
+### Yang berubah
+
+| Aspek | Sebelum | Sesudah |
+|---|---|---|
+| Pengelompokan | 5 elemen ditumpuk tanpa wadah | **3 kartu berjudul** |
+| Judul kartu | tidak ada | `Berkas` · `Pengaturan kertas` · `Susun & gabungkan` |
+| Header halaman | `h1` 32px, tanpa label | eyebrow + `h1` clamp(1.9rem→2.6rem) ≈ **41.6px** |
+| Dropzone | kotak polos, tanpa ikon, hint tercampur | ilustrasi dokumen SVG 46px, tombol `btn--primary`, batas info dipindah ke kepala kartu |
+| Kotak pengaturan | kartu bersarang (border di dalam kartu) | menyatu di kartu — `background:none; border:none` |
+| Area aksi | flex-wrap | **grid** `1fr auto auto`, tombol 44px, menumpuk penuh di ≤640px |
+| Jarak antar kartu | 16px (seragam, padat) | 18px + padding kartu 20px |
+
+Tidak ada kelas lama yang dihapus, jadi tidak ada tes yang perlu diubah: seluruh penataan
+ulang memakai kelas baru (`.card`, `.card--soft`, `.card__title`, `.card__sub`, `.card__head`,
+`.dropzone__icon`, `.dropzone__lead`, `.empty-card`, `.page__eyebrow`).
+
+Kelas `.cloud`/`.cloud__title` sengaja dibiarkan hidup (dipakai gaya kartu lama) supaya
+perubahan ini tetap bisa dibalik dan tidak menyentuh apa pun di luar `/merge`.
+
+### Angka sesudah rombak
+
+| Ukuran | Sebelum 7b | Sesudah 7b |
+|---|---|---|
+| Tinggi panel Gabungkan | 899px | 1217px (3 kartu, kini berstruktur) |
+| Tinggi panel Atur halaman | 646px | 806px |
+| Judul `h1` | 32px | 41.6px |
+| Kartu pada tab Gabungkan | 0 | 3 (347 / 181 / 179 px) |

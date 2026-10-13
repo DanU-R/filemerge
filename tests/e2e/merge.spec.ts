@@ -199,8 +199,10 @@ test.describe('FileMerge MVP — Fase 1', () => {
     await expect(failures).toContainText('enc.pdf')
     await expect(failures).toContainText('bad.pdf')
 
-    // Aplikasi tidak crash: header & queue masih ada.
-    await expect(page.locator('h1')).toContainText('PDF Merger')
+    // Aplikasi tidak crash: toolbar/antrean masih berfungsi dan header halaman tetap ada.
+    // (Assertion ini sengaja tidak bergantung pada teks judul tertentu.)
+    await expect(page.locator('.page__head h1')).toBeVisible()
+    await expect(page.locator('[data-testid="file-input"]')).toBeAttached()
 
     // Masih bisa merge file valid berikutnya.
     await page.click('button:has-text("Bersihkan")')

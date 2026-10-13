@@ -53,10 +53,11 @@ export default async function MergePage({
   return (
     <main className="page">
       <header className="page__head">
-        <h1>PDF Merger</h1>
+        <p className="page__eyebrow">FileMerge</p>
+        <h1>Gabungkan PDF & gambar</h1>
         <p>
-          Tambahkan PDF/JPG/PNG, atur urutan dengan tombol naik/turun, lalu gabungkan. Semua
-          diproses di browser kamu.
+          Susun berkas, atur ukuran halaman, lalu unduh satu PDF. Semua diproses di browser kamu —
+          tidak ada berkas yang dikirim ke server.
         </p>
       </header>
       <MergeTool

@@ -884,3 +884,189 @@ button.icon {
     font-size: 0.92rem;
   }
 }
+
+/* =====================================================================
+   Fase 7b — Rombak LAYOUT /merge
+   Sebelumnya panel-panel hanya ditumpuk (`gap 16px`) sehingga halaman
+   terasa seperti daftar panjang tanpa pengelompokan, judul header terlalu
+   kecil, dan tidak ada kedalaman. Blok ini menyusun ulang komposisinya.
+   Semua selector kelas lama dipertahankan; yang baru hanya menambah.
+   ===================================================================== */
+
+/* ---- Header halaman: judul jelas lebih besar + label kecil di atas ---- */
+.page__head {
+  margin: 4px 0 8px;
+}
+
+.page__eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.page__head h1 {
+  font-size: clamp(1.9rem, 4.4vw, 2.6rem);
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+
+.page__head p {
+  font-size: 1.02rem;
+  max-width: 62ch;
+  margin: 0;
+}
+
+/* ---- Jarak bilah tab ke konten ---- */
+.tabhint {
+  margin: 14px 0 4px;
+}
+
+/* Setiap tab adalah tumpukan kartu dengan jarak lega. */
+.tabpanel {
+  gap: 18px;
+}
+
+/* ---- Kartu: permukaan berisi beberapa kontrol (SATU header, tanpa nested) ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Kartu dengan kepala berwarna lembut — hanya dipakai untuk area unggah. */
+.card--soft {
+  background: var(--soft);
+  border-color: #bfe3d3;
+  padding: 18px;
+}
+
+.card__title {
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.card__sub {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 4px 0 0;
+}
+
+.card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Kotak pengaturan halaman di dalam kartu: netral, tanpa kartu bersarang. */
+.tabpanel .pageset,
+.card .pageset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* ---- Dropzone: lebih ramping, ramah, dan jelas bisa diklik ---- */
+.dropzone {
+  border: 2px dashed #a9ddc6;
+  border-radius: var(--radius-thumb);
+  background: var(--surface);
+  padding: 22px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.dropzone > p {
+  margin: 0;
+}
+
+.dropzone__icon {
+  width: 46px;
+  height: 46px;
+  color: var(--accent);
+}
+
+.dropzone__lead {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.dropzone .hint {
+  margin: 2px 0 0;
+}
+
+/* ---- Antrean berkas ---- */
+.queue {
+  gap: 10px;
+}
+
+.queue__item {
+  border-radius: var(--radius-thumb);
+  padding: 12px 14px;
+}
+
+/* ---- Kontrol akhir: input nama file + aksi utama ---- */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.controls .field {
+  flex: none;
+}
+
+.controls .btn {
+  min-height: 44px;
+}
+
+@media (max-width: 640px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .controls .btn {
+    width: 100%;
+  }
+}
+
+/* ---- Kartu kosong / ajakan ---- */
+.empty-card {
+  text-align: center;
+  color: var(--muted);
+  padding: 22px 18px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+.empty-card p {
+  margin: 0;
+}
+
+/* Isi kartu dokumen/preset dibiarkan mengalir di dalam kartu. */
+.card > .cloud__list,
+.card > .preset {
+  margin: 0;
+}
