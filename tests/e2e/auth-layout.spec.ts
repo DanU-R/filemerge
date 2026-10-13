@@ -21,14 +21,15 @@ test.describe('Halaman auth — tata letak', () => {
         .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
       expect(cols).toBe(2)
 
-      // Kartu form mengisi tinggi panel kiri (stretch) — tidak mengapung kecil.
+      // Kartu form tidak dipaksa setinggi panel kiri (kalau dipaksa, isinya
+      // akan menyisakan rongga besar di dalam kartu).
       const [asideH, cardH] = await page.evaluate(() => {
         const a = document.querySelector('.auth-aside')!.getBoundingClientRect().height
         const c = document.querySelector('.auth-card')!.getBoundingClientRect().height
         return [a, c]
       })
-      expect(Math.abs(asideH - cardH)).toBeLessThan(24)
-      expect(cardH).toBeGreaterThan(400)
+      expect(cardH).toBeGreaterThan(380)
+      expect(cardH).toBeLessThan(asideH + 1)
 
       // Sisa ruang di dalam kartu wajar (< 160px), bukan separuh kartu kosong.
       const slack = await page.evaluate(() => {
@@ -43,6 +44,48 @@ test.describe('Halaman auth — tata letak', () => {
       expect(slack).toBeLessThan(160)
     })
   }
+
+  test('label tidak memakan tinggi berlebih (regresi flex-basis 220px)', async ({ page }) => {
+    // Pernah terjadi: `.field { flex: 1 1 220px }` dipakai juga di kontainer
+    // vertikal, sehingga flex-basis menjadi TINGGI 220px. Akibatnya label hanya
+    // berisi input ~43px tapi memakan 220px -> celah ~190px antar input.
+    await page.goto(BASE + '/login')
+
+    const m = await page.evaluate(() => {
+      const email = document.querySelector('[data-testid="email"]')!
+      const pass = document.querySelector('[data-testid="password"]')!
+      const label = email.closest('label')!.getBoundingClientRect()
+      const er = email.getBoundingClientRect()
+      const pr = pass.getBoundingClientRect()
+      return {
+        labelH: label.height,
+        inputH: er.height,
+        gap: pr.top - er.bottom,
+      }
+    })
+
+    // Tinggi label ≈ input + teks label; bukan 220px.
+    expect(m.labelH).toBeLessThan(m.inputH + 60)
+    // Jarak antar input wajar (hanya teks label + gap), bukan ratusan piksel.
+    expect(m.gap).toBeLessThan(60)
+    expect(m.gap).toBeGreaterThan(0)
+  })
+
+  test('semua .field punya tinggi alami di setiap halaman', async ({ page }) => {
+    for (const path of ['/login', '/register', '/merge']) {
+      await page.goto(BASE + path)
+      const tallest = await page.evaluate(() =>
+        Math.max(
+          0,
+          ...[...document.querySelectorAll('.field')].map(
+            (e) => e.getBoundingClientRect().height,
+          ),
+        ),
+      )
+      // 220px adalah gejala bug; 101px masih wajar untuk label + bantuan.
+      expect(tallest, `.field tertinggi di ${path} = ${tallest}px`).toBeLessThan(150)
+    }
+  })
 
   test('login: input, tombol selebar kartu, pemisah, tautan daftar', async ({ page }) => {
     await page.goto(BASE + '/login')

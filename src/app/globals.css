@@ -623,6 +623,16 @@ a {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+}
+
+/* Lebar fleksibel HANYA di dalam baris horizontal.
+   Sebelumnya `flex: 1 1 220px` dipasang di .field dasar; di dalam kontainer
+   vertikal (kartu auth, kartu alat PDF) flex-basis itu menjadi TINGGI 220px,
+   sehingga label hanya berisi input ~43px tetapi memakan 220px — muncul celah
+   besar antar input. Di baris horizontal (upload/filters) perilaku lama tetap. */
+.upload .field,
+.filters .field {
   flex: 1 1 220px;
 }
 
@@ -750,7 +760,9 @@ a {
   display: grid;
   grid-template-columns: 1fr 400px;
   gap: 24px;
-  align-items: stretch;
+  /* Jangan paksa kedua kolom sama tinggi: kartu form yang lebih pendek akan
+     melar dan menyisakan rongga kosong di dalamnya. Biarkan tinggi alami. */
+  align-items: start;
   margin: 8px 0 0;
 }
 
@@ -832,10 +844,7 @@ a {
   padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  /* Kartu ikut tinggi panel kiri (stretch), jadi isinya diletakkan di tengah
-     agar ruang lebihnya terbagi rata dan terlihat disengaja, bukan kosong. */
-  justify-content: center;
+  gap: 18px;
 }
 
 .auth-card h1 {
