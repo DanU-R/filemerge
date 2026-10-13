@@ -1,15 +1,29 @@
 :root {
-  --bg: #f7f8fa;
+  /* ---- Palet Percikan (design-system.md) ---- */
+  --bg: #f2fbf7; /* mint sangat muda */
   --surface: #ffffff;
-  --text: #14171f;
-  --muted: #5b6472;
-  --line: #dfe3ea;
-  --primary: #1f5eff;
+  --ink: #10342b; /* teks utama */
+  --text: var(--ink);
+  --muted: #5b7a70;
+  --line: #cde8de;
+  --accent: #0e9f6e; /* aksi utama */
+  --primary: var(--accent);
   --primary-ink: #ffffff;
+  --accent2: #ff8a3d; /* aksen hangat */
+  --soft: #dff5ec; /* bidang lembut */
   --danger: #c0362c;
-  --warn-bg: #fff5e0;
-  --warn-line: #e6b95c;
-  --radius: 10px;
+  --warn-bg: #fff3e2;
+  --warn-line: #f2c68a;
+  --warn-ink: #7a4b12;
+  --ok-bg: #dff5ec;
+  --ok-line: #a9ddc6;
+  --ok-ink: #0b6b4a;
+  --err-bg: #fbeae7;
+  --err-line: #efc9c4;
+  --err-ink: #8f2a22;
+  /* Radius: 20px kartu/panel, 16px thumbnail; tombol pakai 999px di rule-nya. */
+  --radius: 20px;
+  --radius-thumb: 16px;
 }
 
 * {
@@ -25,8 +39,23 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.55;
+  font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fredoka hanya untuk judul & angka besar (bukan body). */
+h1,
+h2,
+h3,
+.hero h1,
+.page__head h1,
+.dash__head h1,
+.auth h1 {
+  font-family: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 a {
@@ -155,19 +184,30 @@ a {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 16px;
-  border-radius: var(--radius);
+  min-height: 44px;
+  padding: 10px 22px;
+  border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--text);
+  font-family: inherit;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
 }
 
 .btn:hover:not(:disabled) {
-  border-color: var(--primary);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn:disabled {
@@ -176,9 +216,33 @@ a {
 }
 
 .btn--primary {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--accent);
+  border-color: var(--accent);
   color: var(--primary-ink);
+}
+
+/* Hanya tombol primary yang dapat bayangan (aturan design system). */
+.btn--primary:hover:not(:disabled) {
+  box-shadow: 0 8px 18px rgba(14, 159, 110, 0.3);
+}
+
+/* Sekunder bergaris putus-putus aksen. */
+.btn--ghost {
+  border-style: dashed;
+  border-color: var(--accent);
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn--danger {
+  background: var(--surface);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn--danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  box-shadow: 0 8px 18px rgba(192, 54, 44, 0.22);
 }
 
 .tool {
@@ -196,8 +260,8 @@ a {
 }
 
 .dropzone--active {
-  border-color: var(--primary);
-  background: #eef3ff;
+  border-color: var(--accent);
+  background: var(--soft);
 }
 
 .dropzone p {
@@ -266,16 +330,12 @@ a {
   color: var(--muted);
 }
 
-.badge--pdf {
-  background: #eef3ff;
-  border-color: #c8d7ff;
-  color: #1f3fae;
-}
-
+/* Pil tipe file: PDF/JPG/PNG = accent2 + teks putih (design system). */
+.badge--pdf,
 .badge--image {
-  background: #eefaf1;
-  border-color: #bfe6cd;
-  color: #1f7a45;
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #fff;
 }
 
 .queue__actions {
@@ -284,14 +344,24 @@ a {
 }
 
 .icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-thumb);
   border: 1px solid var(--line);
   background: var(--surface);
   cursor: pointer;
   font-size: 1rem;
   line-height: 1;
+  color: var(--muted);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.icon:hover:not(:disabled) {
+  background: var(--soft);
+  border-color: var(--accent);
+  color: var(--ink);
 }
 
 .icon:disabled {
@@ -340,15 +410,15 @@ a {
 }
 
 .alert--error {
-  background: #fdeceb;
-  border: 1px solid #f3c2bd;
-  color: #8f2a22;
+  background: var(--err-bg);
+  border: 1px solid var(--err-line);
+  color: var(--err-ink);
 }
 
 .alert--warn {
   background: var(--warn-bg);
   border: 1px solid var(--warn-line);
-  color: #7a5a12;
+  color: var(--warn-ink);
 }
 
 .progress {
@@ -362,8 +432,8 @@ a {
 }
 
 .result {
-  background: #eefaf1;
-  border: 1px solid #bfe6cd;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
   border-radius: var(--radius);
   padding: 14px 16px;
   display: flex;
@@ -488,9 +558,9 @@ a {
 }
 
 .alert--ok {
-  background: #eefaf1;
-  border: 1px solid #bfe6cd;
-  color: #1f7a45;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  color: var(--ok-ink);
 }
 
 .doclist {
@@ -585,7 +655,8 @@ a {
 }
 
 .queue__item {
-  grid-template-columns: 30px 28px 1fr auto auto auto;
+  /* 44px ikon (design system) + 24px nomor urut + handle drag. */
+  grid-template-columns: 30px 24px 1fr auto auto auto;
 }
 
 .pageset {
@@ -612,15 +683,9 @@ a {
 .preset input {
   padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 999px;
   background: var(--surface);
   color: var(--text);
-}
-
-.btn--danger {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: #fff;
 }
 
 .doclist__item {
@@ -727,4 +792,95 @@ button.icon {
 .thumb__actions .icon:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+/* ---- Tabs (gaya garis bawah) — /merge ---- */
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 12px 2px;
+  min-height: 44px;
+  margin-bottom: -1px;
+  position: relative;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: color 150ms ease;
+}
+
+.tab:hover {
+  color: var(--ink);
+  transform: none;
+  box-shadow: none;
+}
+
+.tab[aria-selected='true'] {
+  color: var(--ink);
+}
+
+.tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+}
+
+.tab:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.tabhint {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 12px 0 20px;
+}
+
+.tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabpanel[hidden] {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .tabbar {
+    gap: 18px;
+  }
+
+  .tab {
+    font-size: 0.92rem;
+  }
 }

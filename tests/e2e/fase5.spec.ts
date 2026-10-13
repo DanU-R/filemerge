@@ -118,7 +118,7 @@ test.describe('Fase 5 — pengaturan halaman, drag-drop, preset', () => {
     await uploadDoc(page, 'CV', 1)
     await uploadDoc(page, 'Ijazah', 2)
 
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=dokumen')
     // tambah 2 dokumen dari akun ke antrean
     await page.locator('[data-testid="cloud-add"]').nth(0).click()
     await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(1)
@@ -132,15 +132,20 @@ test.describe('Fase 5 — pengaturan halaman, drag-drop, preset', () => {
       timeout: 30000,
     })
 
+    // Bersihkan & tombol merge ada di tab "Gabungkan" -> pindah dulu.
+    await page.click('[data-testid="tab-gabungkan"]')
+
     // bersihkan antrean
     await page.click('button:has-text("Bersihkan")')
     await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(0)
 
-    // terapkan preset -> antrean kembali terisi
+    // terapkan preset -> antrean kembali terisi (preset ada di tab "Dokumen & preset")
+    await page.click('[data-testid="tab-dokumen"]')
     await page.locator('[data-testid="preset-apply"]').first().click()
     await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(2, { timeout: 30000 })
 
-    // merge hasilnya
+    // merge hasilnya (tombol di tab "Gabungkan")
+    await page.click('[data-testid="tab-gabungkan"]')
     await page.click('[data-testid="merge"]')
     await expect(page.locator('[data-testid="result"]')).toHaveAttribute('data-result-id', '1')
     expect(mediaBoxes(await mergedBytes(page)).length).toBe(3)
@@ -150,7 +155,7 @@ test.describe('Fase 5 — pengaturan halaman, drag-drop, preset', () => {
     const a = await (await browser.newContext()).newPage()
     await register(a, uniqueEmail('pr-a'))
     await uploadDoc(a, 'Doc A', 1)
-    await a.goto(BASE + '/merge')
+    await a.goto(BASE + '/merge?tab=dokumen')
     await a.locator('[data-testid="cloud-add"]').first().click()
     await expect(a.locator('[data-testid="queue-item"]')).toHaveCount(1)
     await a.fill('[data-testid="preset-name"]', 'PunyaA')
@@ -159,7 +164,7 @@ test.describe('Fase 5 — pengaturan halaman, drag-drop, preset', () => {
 
     const b = await (await browser.newContext()).newPage()
     await register(b, uniqueEmail('pr-b'))
-    await b.goto(BASE + '/merge')
+    await b.goto(BASE + '/merge?tab=dokumen')
     await expect(b.locator('[data-testid="preset-apply"]')).toHaveCount(0)
   })
 })

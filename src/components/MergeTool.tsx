@@ -16,6 +16,7 @@ import { ReorderableList } from '@/components/ReorderableList'
 import PageSettingsPanel from '@/components/PageSettingsPanel'
 import PresetPanel, { type PresetRow } from '@/components/PresetPanel'
 import PdfToolsPanel from '@/components/PdfToolsPanel'
+import Tabs from '@/components/Tabs'
 import { fetchWithRetry } from '@/lib/resilientFetch'
 import type { MergeSource, QueueItem } from '@/lib/types'
 
@@ -43,10 +44,12 @@ export default function MergeTool({
   cloudDocs = [],
   presets: initialPresets = [],
   isAuthed = false,
+  defaultTab,
 }: {
   cloudDocs?: CloudDocItem[]
   presets?: PresetRow[]
   isAuthed?: boolean
+  defaultTab?: string
 }) {
   const [queue, setQueue] = useState<QueueState>({ items: [], errors: [] })
   const [presets, setPresets] = useState<PresetRow[]>(initialPresets)
@@ -286,65 +289,11 @@ export default function MergeTool({
     }
   }
 
+  // Tab "Dokumen & preset" hanya muncul kalau ada isinya (dokumen akun atau preset).
+  const showDocsTab = isAuthed || cloudDocs.length > 0
+
   return (
     <div className="tool">
-      <section
-        className={`dropzone${dragging ? ' dropzone--active' : ''}`}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setDragging(true)
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault()
-          setDragging(false)
-          void addFiles(e.dataTransfer.files)
-        }}
-      >
-        <p>
-          <strong>Tarik &amp; lepas</strong> file ke sini, atau
-        </p>
-        <button type="button" className="btn" onClick={() => inputRef.current?.click()}>
-          Pilih file
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          accept={ACCEPT}
-          className="visually-hidden"
-          data-testid="file-input"
-          onChange={(e) => {
-            if (e.target.files) void addFiles(e.target.files)
-            e.target.value = ''
-          }}
-        />
-        <p className="hint">
-          PDF, JPG, atau PNG. Maks {formatBytes(LIMITS.MAX_FILE_BYTES)} per file,{' '}
-          {LIMITS.MAX_FILES} file, total {formatBytes(LIMITS.MAX_TOTAL_BYTES)}.
-        </p>
-      </section>
-
-      {cloudDocs.length > 0 && (
-        <section className="cloud" data-testid="cloud-docs">
-          <h2 className="cloud__title">Pilih dari dokumen saya</h2>
-          <ul className="cloud__list">
-            {cloudDocs.map((d) => (
-              <li key={d.id}>
-                <button
-                  type="button"
-                  className="btn btn--small"
-                  onClick={() => void addCloudDoc(d)}
-                  data-testid="cloud-add"
-                >
-                  + {d.displayName}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {errors.length > 0 && (
         <ul className="alert alert--error" role="alert" data-testid="errors">
           {errors.map((e, i) => (
@@ -359,99 +308,6 @@ export default function MergeTool({
           berkapasitas rendah.
         </p>
       )}
-
-      <ReorderableList
-        items={items}
-        onReorder={reorder}
-        className="queue"
-        renderItem={(item, index, handle) => (
-          <>
-            {handle}
-            <span className="queue__index">{index + 1}</span>
-            <span className="queue__name" title={item.name}>
-              {item.name}
-            </span>
-            <span className={`badge badge--${item.kind}`}>
-              {item.kind === 'pdf' ? 'PDF' : 'Gambar'}
-            </span>
-            <span className="queue__size">{formatBytes(item.size)}</span>
-            <span className="queue__actions">
-              <button
-                type="button"
-                className="icon"
-                aria-label={`Naikkan ${item.name}`}
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                className="icon"
-                aria-label={`Turunkan ${item.name}`}
-                disabled={index === items.length - 1}
-                onClick={() => move(index, 1)}
-              >
-                ↓
-              </button>
-              <button
-                type="button"
-                className="icon icon--danger"
-                aria-label={`Hapus ${item.name}`}
-                onClick={() => remove(item.id)}
-              >
-                ×
-              </button>
-            </span>
-          </>
-        )}
-      />
-
-      {items.length === 0 && (
-        <p className="empty" data-testid="empty">
-          Belum ada file. Tambahkan minimal satu PDF atau gambar untuk mulai.
-        </p>
-      )}
-
-      {isAuthed && (
-        <PresetPanel
-          presets={presets}
-          busy={busy}
-          canCreate={items.some((i) => i.cloudId)}
-          onCreate={(name) => void savePreset(name)}
-          onApply={(ids) => void applyPreset(ids)}
-          onDelete={(id) => void deletePreset(id)}
-        />
-      )}
-
-      <PageSettingsPanel value={pageSettings} onChange={setPageSettings} />
-
-      <PdfToolsPanel />
-
-      <div className="controls">
-        <label className="field">
-          <span>Nama hasil</span>
-          <input
-            type="text"
-            value={outputName}
-            onChange={(e) => setOutputName(e.target.value)}
-            aria-label="Nama file hasil"
-            data-testid="output-name"
-          />
-        </label>
-        <button
-          type="button"
-          className="btn btn--primary"
-          disabled={items.length === 0 || busy}
-          onClick={() => void merge()}
-          data-testid="merge"
-        >
-          {busy ? 'Menggabungkan…' : 'Gabungkan'}
-        </button>
-        <button type="button" className="btn" disabled={busy} onClick={reset}>
-          Bersihkan
-        </button>
-      </div>
 
       {progress && (
         <p className="progress" role="status" data-testid="progress">
@@ -485,6 +341,190 @@ export default function MergeTool({
           </a>
         </div>
       )}
+
+      <Tabs
+        defaultTab={defaultTab}
+        items={[
+          {
+            id: 'gabungkan',
+            label: 'Gabungkan',
+            hint: 'Tarik PDF atau foto, atur ukurannya, lalu gabungkan.',
+            content: (
+              <>
+                <section
+                  className={`dropzone${dragging ? ' dropzone--active' : ''}`}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    setDragging(true)
+                  }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    setDragging(false)
+                    void addFiles(e.dataTransfer.files)
+                  }}
+                >
+                  <p>
+                    <strong>Tarik &amp; lepas</strong> file ke sini, atau
+                  </p>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    Pilih file
+                  </button>
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    multiple
+                    accept={ACCEPT}
+                    className="visually-hidden"
+                    data-testid="file-input"
+                    onChange={(e) => {
+                      if (e.target.files) void addFiles(e.target.files)
+                      e.target.value = ''
+                    }}
+                  />
+                  <p className="hint">
+                    PDF, JPG, atau PNG. Maks {formatBytes(LIMITS.MAX_FILE_BYTES)} per file,{' '}
+                    {LIMITS.MAX_FILES} file, total {formatBytes(LIMITS.MAX_TOTAL_BYTES)}.
+                  </p>
+                </section>
+
+                <ReorderableList
+                  items={items}
+                  onReorder={reorder}
+                  className="queue"
+                  renderItem={(item, index, handle) => (
+                    <>
+                      {handle}
+                      <span className="queue__index">{index + 1}</span>
+                      <span className="queue__name" title={item.name}>
+                        {item.name}
+                      </span>
+                      <span className={`badge badge--${item.kind}`}>
+                        {item.kind === 'pdf' ? 'PDF' : 'Gambar'}
+                      </span>
+                      <span className="queue__size">{formatBytes(item.size)}</span>
+                      <span className="queue__actions">
+                        <button
+                          type="button"
+                          className="icon"
+                          aria-label={`Naikkan ${item.name}`}
+                          disabled={index === 0}
+                          onClick={() => move(index, -1)}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          className="icon"
+                          aria-label={`Turunkan ${item.name}`}
+                          disabled={index === items.length - 1}
+                          onClick={() => move(index, 1)}
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          className="icon icon--danger"
+                          aria-label={`Hapus ${item.name}`}
+                          onClick={() => remove(item.id)}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    </>
+                  )}
+                />
+
+                {items.length === 0 && (
+                  <p className="empty" data-testid="empty">
+                    Belum ada file. Tambahkan minimal satu PDF atau gambar untuk mulai.
+                  </p>
+                )}
+
+                <PageSettingsPanel value={pageSettings} onChange={setPageSettings} />
+
+                <div className="controls">
+                  <label className="field">
+                    <span>Nama hasil</span>
+                    <input
+                      type="text"
+                      value={outputName}
+                      onChange={(e) => setOutputName(e.target.value)}
+                      aria-label="Nama file hasil"
+                      data-testid="output-name"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    disabled={items.length === 0 || busy}
+                    onClick={() => void merge()}
+                    data-testid="merge"
+                  >
+                    {busy ? 'Menggabungkan…' : 'Gabungkan'}
+                  </button>
+                  <button type="button" className="btn" disabled={busy} onClick={reset}>
+                    Bersihkan
+                  </button>
+                </div>
+              </>
+            ),
+          },
+          {
+            id: 'halaman',
+            label: 'Atur halaman',
+            hint: 'Pilih satu PDF untuk memutar, menghapus, memecah, atau mengompres halamannya.',
+            content: <PdfToolsPanel />,
+          },
+          ...(showDocsTab
+            ? [
+                {
+                  id: 'dokumen',
+                  label: 'Dokumen & preset',
+                  hint: 'Pakai dokumen yang sudah tersimpan, atau simpan susunan jadi preset.',
+                  content: (
+                    <>
+                      {cloudDocs.length > 0 && (
+                        <section className="cloud" data-testid="cloud-docs">
+                          <h2 className="cloud__title">Pilih dari dokumen saya</h2>
+                          <ul className="cloud__list">
+                            {cloudDocs.map((d) => (
+                              <li key={d.id}>
+                                <button
+                                  type="button"
+                                  className="btn btn--small"
+                                  onClick={() => void addCloudDoc(d)}
+                                  data-testid="cloud-add"
+                                >
+                                  + {d.displayName}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      )}
+
+                      {isAuthed && (
+                        <PresetPanel
+                          presets={presets}
+                          busy={busy}
+                          canCreate={items.some((i) => i.cloudId)}
+                          onCreate={(name) => void savePreset(name)}
+                          onApply={(ids) => void applyPreset(ids)}
+                          onDelete={(id) => void deletePreset(id)}
+                        />
+                      )}
+                    </>
+                  ),
+                },
+              ]
+            : []),
+        ]}
+      />
     </div>
   )
 }

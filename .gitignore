@@ -13,3 +13,4 @@ playwright-report
 public/pdf.worker.min.mjs
 .superdesign
 .claude/
+.superdesign/tmp

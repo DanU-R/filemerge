@@ -40,14 +40,14 @@ async function downloadedBytes(page: import('@playwright/test').Page): Promise<U
 
 test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () => {
   test('menampilkan daftar halaman dengan ukuran', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 300, 400]))
     await expect(page.locator('[data-testid="pdftools-page"]')).toHaveCount(3)
     await expect(page.locator('[data-testid="pdftools-summary"]')).toContainText('3 halaman')
   })
 
   test('hapus satu halaman lalu terapkan', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 200, 200]))
     await page.locator('[data-testid="page-delete"]').nth(1).click()
     await expect(page.locator('[data-testid="page-deleted"]')).toHaveCount(1)
@@ -67,7 +67,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('tolak saat semua halaman dihapus', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 200]))
     for (const b of await page.locator('[data-testid="page-delete"]').all()) await b.click()
     await expect(page.locator('[data-testid="pdftools-summary"]')).toContainText('0 dipakai')
@@ -76,7 +76,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('rotasi tercatat dan diterapkan ke PDF hasil', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfSized([[300, 400]]))
     await page.locator('[data-testid="page-rotate-90"]').first().click()
     await expect(page.locator('[data-testid="pdftools-page"]').first()).toContainText('90°')
@@ -94,7 +94,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('pecah PDF menghasilkan tiap bagian (unduhan tidak hilang)', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 200, 200, 200]), 'empat.pdf')
     await page.fill('[data-testid="split-ranges"]', '1-2, 4')
     const files: { name: string; bytes: Buffer }[] = []
@@ -117,7 +117,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('rentang tidak valid memberi pesan jelas', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 200]))
     await page.fill('[data-testid="split-ranges"]', 'abc')
     await page.click('[data-testid="split-run"]')
@@ -127,7 +127,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('kompres PDF: nama benar, file valid, laporan jujur', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 200, 200]), 'kompres.pdf')
     const dl = page.waitForEvent('download', { timeout: 40000 })
     await page.click('[data-testid="compress-run"]')
@@ -142,7 +142,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('file bukan PDF ditolak dengan pesan', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await page.setInputFiles('[data-testid="pdftools-input"]', {
       name: 'palsu.pdf',
       mimeType: 'application/pdf',
@@ -154,7 +154,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('pratinjau halaman dirender (gambar nyata, bukan placeholder)', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([300, 300, 300]))
     await expect(page.locator('[data-testid="thumb-img"]')).toHaveCount(3, { timeout: 45000 })
     // Gambar harus benar-benar termuat dari blob pdf.js (bukan broken image).
@@ -165,7 +165,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('rotasi mengubah pratinjau secara visual (kotak bertukar + sudut berubah)', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfSized([[300, 400]]))
     await expect(page.locator('[data-testid="thumb-img"]')).toHaveCount(1, { timeout: 45000 })
 
@@ -195,7 +195,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('susun ulang: tombol kiri/kanan mengubah urutan halaman pada hasil', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     // Dua halaman dengan lebar berbeda supaya urutan hasil bisa diperiksa.
     await pick(page, await pdfSized([
       [100, 300],
@@ -226,7 +226,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('susun ulang: drag handle tersedia & bisa mengubah urutan', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfSized([
       [100, 300],
       [900, 300],
@@ -256,7 +256,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   })
 
   test('susun ulang + rotasi + hapus sekaligus tetap benar', async ({ page }) => {
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfSized([
       [100, 300],
       [200, 300],
@@ -284,7 +284,7 @@ test.describe('Fase 5 lanjutan — alat PDF (rotasi/hapus/split/kompres)', () =>
   test('pratinjau gagal tetap tidak menghalangi editing (degradasi anggun)', async ({ page }) => {
     // Blokir worker pdf.js -> render gagal, editor harus tetap berfungsi.
     await page.route('**/pdf.worker.min.mjs', (r) => r.abort())
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=halaman')
     await pick(page, await pdfBytes([200, 200, 200]), 'tanpa-pratinjau.pdf')
 
     await expect(page.locator('[data-testid="thumbs-status"]')).toContainText(/tidak tersedia/i, {

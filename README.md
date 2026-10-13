@@ -17,6 +17,13 @@ pengguna agar bisa dipakai ulang tanpa upload berulang.
 
 ## Fitur
 
+**Antarmuka** — halaman `/merge` dibagi menjadi tiga tab agar tidak menumpuk panjang:
+**Gabungkan** (antrean berkas + pengaturan kertas), **Atur halaman** (editor PDF),
+**Dokumen & preset** (dokumen akun + preset susunan). Navigasi tab mengikuti pola ARIA
+(`role="tablist"`) dengan dukungan papan ketik ←/→/Home/End. Tab dapat dibuka langsung lewat
+`/merge?tab=gabungkan|halaman|dokumen`. Tampilan memakai arah visual **Percikan** (mint/hijau
+tinta/tangerine, Fredoka untuk judul + Nunito untuk teks, font di-host sendiri karena CSP).
+
 **Tanpa akun (publik)**
 - Gabung banyak PDF + gambar (JPG/JPEG/PNG) jadi satu PDF.
 - Urutkan dengan **drag-and-drop** atau tombol naik/turun (aksesibilitas).
@@ -118,6 +125,7 @@ package manager Bun), set env `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN` di Projec
 - [`docs/Fase5-Report.md`](docs/Fase5-Report.md) — laporan Fase 5
 - [`docs/Fase4-Report.md`](docs/Fase4-Report.md) — laporan Fase 4 (keamanan)
 - [`docs/Fase6-Report.md`](docs/Fase6-Report.md) — laporan Fase 6 (alat PDF lanjutan)
+- [`docs/Fase7-Report.md`](docs/Fase7-Report.md) — laporan Fase 7 (desain Percikan + tab `/merge`)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — panduan kontribusi
 - [`SECURITY.md`](SECURITY.md) — kebijakan keamanan
 - [`docs/Deploy-Vercel.md`](docs/Deploy-Vercel.md) — panduan deploy

@@ -73,13 +73,16 @@ test.describe('Fase 2/3/4 — akun & dokumen', () => {
     await uploadDoc(page, 'Ijazah', 1)
     await uploadDoc(page, 'CV Lamaran', 2)
 
-    await page.goto(BASE + '/merge')
+    await page.goto(BASE + '/merge?tab=dokumen')
     const cloud = page.locator('[data-testid="cloud-add"]')
     await expect(cloud).toHaveCount(2)
 
     // Ambil 1 dari cloud + 1 file lokal -> cek jumlah halaman hasil.
     await cloud.first().click()
     await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(1)
+
+    // Input file & tombol merge ada di tab "Gabungkan" -> pindah dulu.
+    await page.click('[data-testid="tab-gabungkan"]')
     await page.setInputFiles('[data-testid="file-input"]', {
       name: 'lampiran.pdf',
       mimeType: 'application/pdf',

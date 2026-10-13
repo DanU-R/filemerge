@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import './fonts.css'
 import './globals.css'
 import { getCurrentUser } from '@/lib/server/auth'
 

@@ -17,7 +17,11 @@ export interface CloudDoc {
   sizeBytes: number
 }
 
-export default async function MergePage() {
+export default async function MergePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
   let cloudDocs: CloudDoc[] = []
   let presets: { id: string; name: string; items: unknown }[] = []
   let isAuthed = false
@@ -40,6 +44,12 @@ export default async function MergePage() {
     presets = presetRows.map((p) => ({ id: p.id, name: p.name, items: p.items }))
   }
 
+  const { tab } = await searchParams
+  // Tab yang boleh dibuka lewat URL (?tab=halaman). Bermanfaat untuk penautan langsung
+  // dan supaya tes E2E tidak perlu mengklik bilah tab tiap kali.
+  const ALLOWED = new Set(['gabungkan', 'halaman', 'dokumen'])
+  const defaultTab = tab && ALLOWED.has(tab) ? tab : undefined
+
   return (
     <main className="page">
       <header className="page__head">
@@ -49,7 +59,12 @@ export default async function MergePage() {
           diproses di browser kamu.
         </p>
       </header>
-      <MergeTool cloudDocs={cloudDocs} presets={presets} isAuthed={isAuthed} />
+      <MergeTool
+        cloudDocs={cloudDocs}
+        presets={presets}
+        isAuthed={isAuthed}
+        defaultTab={defaultTab}
+      />
     </main>
   )
 }
